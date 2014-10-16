@@ -1,0 +1,17 @@
+BIN = test_drive
+CC = clang
+FLAGS = -g -Wall -pedantic -m32
+INC = -I include/ -I lib/include/
+LIB_DIR = lib/linux_i386/
+LOC_LIB = $(LIB_DIR)libGLEW.a $(LIB_DIR)libglfw3.a
+SYS_LIB = -lGL -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lm
+SRC = main.c
+
+all:
+	@echo
+	@echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	@echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~Building GNU/LINUX 32-bit~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	@echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	@echo
+	${CC} ${FLAGS} -o ${BIN} ${SRC} ${INC} ${LOC_LIB} ${SYS_LIB}
+

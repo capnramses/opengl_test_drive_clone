@@ -1,0 +1,40 @@
+BIN = test_drive
+CC = g++
+FLAGS = -Ofast -Wall -Wfatal-errors -pedantic -Wextra -fmessage-length=0 -m64
+DEPS = -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"
+INCLUDES = $(wildcard include/*.h)
+INC_DIR = -I include/ -I lib/include/
+LIB_DIR = lib/linux_x86_64/
+LOC_LIB = $(LIB_DIR)libGLEW.a $(LIB_DIR)libglfw3.a
+SYS_LIB = -lGL -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lm
+OBJS = \
+	obj/main.o\
+	obj/gl_utils.o\
+	obj/obj_parser.o
+
+.PHONY : all
+all : binary
+
+binary : $(OBJS) $(INCLUDES)
+	@echo '.....................................................................'
+	$(CC) $(FLAGS) -o $(BIN) $(OBJS) $(LOC_LIB) $(SYS_LIB)
+	@echo '_____________________________________________________________________'
+	@echo '_____________________________________________________________________'
+
+.PHONY : clean
+clean :
+	rm $(BIN) obj/*
+
+#--------------------rule for making objects from cpp files--------------------#
+obj/%.o : src/%.cpp $(INCLUDES)
+	@echo ''
+	@echo '~~~~~~~~~~~~~~~~ building file $< ~~~~~~~~~~~~~~~~~~~~'
+	@echo ''
+	$(CC) $(FLAGS) -c $(DEPS) -o"$@" "$<" $(INC_DIR)
+
+obj/%.o: src/%.c $(INCLUDES)
+	@echo ''
+	@echo '~~~~~~~~~~~~~~~~ building file $< ~~~~~~~~~~~~~~~~~~~~'
+	@echo ''
+	$(CC) $(FLAGS) -c $(DEPS) -o"$@" "$<" $(INC_DIR)
+
