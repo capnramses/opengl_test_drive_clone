@@ -55,6 +55,14 @@ bool start_gl (int width, int height) {
 	return true;
 }
 
+void print_shader_info_log (GLuint shader_index) {
+	int max_length = 2048;
+	int actual_length = 0;
+	char log[2048];
+	glGetShaderInfoLog (shader_index, max_length, &actual_length, log);
+	printf ("shader info log for GL index %u\n%s\n", shader_index, log);
+}
+
 //
 // load a simple vertex shader + fragment shader pair from files
 // and compile+link it into a new shader program
@@ -64,15 +72,17 @@ GLuint link_programme_from_files (const char* vs_file_name,
 	char* vs_str = NULL;
 	char* fs_str = NULL;
 	GLuint vs, fs, sp;
+	long vs_sz, fs_sz;
+	int params = -1;
 
 	// work out size of files
-	unsigned int vs_sz = get_file_size (vs_file_name);
-	unsigned int fs_sz = get_file_size (fs_file_name);
+	vs_sz = get_file_size (vs_file_name);
+	fs_sz = get_file_size (fs_file_name);
 	if (!vs_sz || !fs_sz) {
 		return 0;
 	}
-	vs_str = (char*)malloc (vs_sz);
-	fs_str = (char*)malloc (fs_sz);
+	vs_str = (char*)malloc (vs_sz + 1); // oddly had to do +1 sometimes
+	fs_str = (char*)malloc (fs_sz + 1); // oddly had to do +1 sometimes
 	// read files intro strings
 	if (!parse_file_into_str (vs_file_name, vs_str)) {
 		return 0;
@@ -88,8 +98,21 @@ GLuint link_programme_from_files (const char* vs_file_name,
 	free (vs_str);
 	free (fs_str);
 	glCompileShader (vs);
+	// check for compile errors
+	glGetShaderiv (vs, GL_COMPILE_STATUS, &params);
+	if (GL_TRUE != params) {
+		fprintf (stderr, "ERROR: vertex shader %s did not compile\n", vs_file_name);
+		print_shader_info_log (vs);
+		return 0; // or exit or something
+	}
 	glCompileShader (fs);
-	// TODO check logs
+	// check for compile errors
+	glGetShaderiv (fs, GL_COMPILE_STATUS, &params);
+	if (GL_TRUE != params) {
+		fprintf (stderr, "ERROR: frag shader %s did not compile\n", fs_file_name);
+		print_shader_info_log (fs);
+		return 0; // or exit or something
+	}
 	sp = glCreateProgram ();
 	glAttachShader (sp, vs);
 	glAttachShader (sp, fs);
@@ -128,14 +151,15 @@ bool parse_file_into_str (const char* file_name, char* shader_str) {
 //
 // get a shader file's character count
 // 0 on error
-unsigned int get_file_size (const char* file_name) {
+long get_file_size (const char* file_name) {
 	FILE* fp = fopen (file_name , "r"); // could be rb for binary??
 	if (!fp) {
 		fprintf (stderr, "ERROR: opening file %s\n", file_name);
 		return 0;
 	}
 	fseek (fp, 0, SEEK_END);
-	int sz = ftell (fp);
+	long sz = ftell (fp);
+	printf ("debug: %li bytes long\n", sz);
 	fclose (fp);
 	return sz;
 }

@@ -1,6 +1,6 @@
 BIN = test_drive
-CC = g++
-FLAGS = -Ofast -Wall -Wfatal-errors -pedantic -Wextra -fmessage-length=0 -m64
+CC = clang++
+FLAGS = -g -Ofast -Wall -Wfatal-errors -pedantic -Wextra -fmessage-length=0 -m64
 DEPS = -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"
 INCLUDES = $(wildcard include/*.h)
 INC_DIR = -I include/ -I lib/include/

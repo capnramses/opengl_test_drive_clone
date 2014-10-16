@@ -1,2 +1,11 @@
 16 Oct 2014 - anton
 * first commit, project only a plan at this stage
+* added slight randomness to X for each segment so that there are no
+completely straight road bits - for interesting to look at
+* add cliffs to an additional VAO. they join to the side of the road, but i
+render separately b/c want a different shader
+* cliffs purple shader with screen-space cross-hatching reproduced. scaled-up
+for higher-res display. gl_FragCoord.xy to get on-screen position of fragments,
+then even/odd to determine if black dot or purple
+* added distance fade-to-dark for shaders using gl_FragCoord.w
+* added gamma correction to shaders

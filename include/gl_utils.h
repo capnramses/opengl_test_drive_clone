@@ -10,7 +10,7 @@ GLuint link_programme_from_files (const char* vs_file_name,
 GLuint create_texture_from_file (const char* file_name);
 
 bool parse_file_into_str (const char* file_name, char* shader_str);
-unsigned int get_file_size (const char* file_name);
+long get_file_size (const char* file_name);
 
 extern int gl_width;
 extern int gl_height;

@@ -5,34 +5,49 @@
 #include <stdio.h>
 #include <time.h>
 
-#define TERRAIN_VS "shaders/test.vert"
-#define TERRAIN_FS "shaders/test.frag"
-#define TERRAIN_TEX "textures/road_seg.png"
+#define ROAD_VS "shaders/road.vert"
+#define ROAD_FS "shaders/road.frag"
+#define ROAD_TEX "textures/road_seg.png"
+#define RCLIFF_VS "shaders/rcliff.vert"
+#define RCLIFF_FS "shaders/rcliff.frag"
 
-GLuint terrain_vao;
-GLuint terrain_sp;
-GLint terrain_P_loc;
-GLint terrain_V_loc;
-GLuint terrain_tex;
+// VAOs pointing to generated mesh data
+GLuint road_vao, rcliff_vao;
+// vertex point counts for each VAO
+GLuint road_point_count, rcliff_point_count;
+// shader programmes
+GLuint road_sp, rcliff_sp;
+// uniform locations
+GLint road_P_loc, road_V_loc;
+GLint rcliff_P_loc, rcliff_V_loc, rcliff_w_loc, rcliff_h_loc;
+// textures
+GLuint road_tex;
 
 // length of each terrain block
 unsigned int num_terrain_segs = 10;
-unsigned int terrain_point_count;
 
 //
 // pre-generate as much as possible
 void init_terrain () {
 	printf ("Init terrain...\n");
 	srand (time (NULL));
-	terrain_point_count = num_terrain_segs * 6;
+	road_point_count = num_terrain_segs * 6;
+	rcliff_point_count = num_terrain_segs * 12;
 	
-	terrain_tex = create_texture_from_file (TERRAIN_TEX);
+	road_tex = create_texture_from_file (ROAD_TEX);
 	
-	terrain_sp = link_programme_from_files (TERRAIN_VS, TERRAIN_FS);
-	terrain_P_loc = glGetUniformLocation (terrain_sp, "P");
-	terrain_V_loc = glGetUniformLocation (terrain_sp, "V");
+	road_sp = link_programme_from_files (ROAD_VS, ROAD_FS);
+	road_P_loc = glGetUniformLocation (road_sp, "P");
+	road_V_loc = glGetUniformLocation (road_sp, "V");
 	
-	glGenVertexArrays (1, &terrain_vao);
+	rcliff_sp = link_programme_from_files (RCLIFF_VS, RCLIFF_FS);
+	rcliff_P_loc = glGetUniformLocation (rcliff_sp, "P");
+	rcliff_V_loc = glGetUniformLocation (rcliff_sp, "V");
+	rcliff_h_loc = glGetUniformLocation (rcliff_sp, "h");
+	rcliff_w_loc = glGetUniformLocation (rcliff_sp, "w");
+	
+	glGenVertexArrays (1, &road_vao);
+	glGenVertexArrays (1, &rcliff_vao);
 	
 	// gen some terrain blocks
 	gen_terrain_block (vec3 (0.0, 0.0, 0.0));
@@ -60,8 +75,9 @@ bool gen_terrain_block (vec3 start_left) {
 	unsigned int i = 0;
 	float* vps = NULL;
 	float* vts = NULL;
-	GLuint vp_vbo, vt_vbo;
-	GLuint vps_sz, vts_sz;
+	float* rcliff_vps = NULL;
+	GLuint vp_vbo, vt_vbo, rcliff_vp_vbo;
+	GLuint vps_sz, vts_sz, rcliff_vps_sz;
 	float curr_x, curr_y, curr_z;
 	
 	curr_x = start_left.v[0];
@@ -70,11 +86,16 @@ bool gen_terrain_block (vec3 start_left) {
 	
 	glGenBuffers (1, &vp_vbo);
 	glGenBuffers (1, &vt_vbo);
+	glGenBuffers (1, &rcliff_vp_vbo);
+	
 	type = rand () % 4;
 	printf ("block type %i gend\n", type);
 	
 	vps_sz = num_terrain_segs * 6 * 3 * sizeof (float);
 	vps = (float*)malloc (vps_sz);
+	
+	rcliff_vps_sz = num_terrain_segs * 12 * 3 * sizeof (float);
+	rcliff_vps = (float*)malloc (rcliff_vps_sz);
 	// create 2 triangle for each seg, starting at back_left, and finishing at
 	// top_left
 	
@@ -90,11 +111,19 @@ Road segment created in buffer like this (birds-eye view of road):
 5,0  1
 
 */
-	// TODO use start_left here
-	// TODO add random variation to X
 	// TODO add curve functions to X
 	for (i = 0; i < num_terrain_segs; i++) {
-		float x_off = rand_road_offs ();
+		// this is for adding some jitter to the road/cliffs so never perfectly
+		// straight
+		float x_off = 0.0f;
+		float rcliff_middle_x_off = 0.5f;
+		float rcliff_top_x_off = 4.0f;
+		
+		x_off = rand_road_offs ();
+		
+		//
+		// generate the road surface
+		
 		// point 0
 		vps[i * 18 + 0] = curr_x + -2.0f;
 		vps[i * 18 + 1] = curr_y + 0.0f;
@@ -120,12 +149,73 @@ Road segment created in buffer like this (birds-eye view of road):
 		vps[i * 18 + 16] = curr_y + 0.0f;
 		vps[i * 18 + 17] = curr_z + -1.0f * (float)(i * 4);
 		
+		//
+		// generate the cliffs on right side
+		// road points 1 and 2 are the bottom of the cliff
+		
+		// point 0 (road point 2 - forward)
+		rcliff_vps[i * 36 + 0] = curr_x + 2.0f + x_off;
+		rcliff_vps[i * 36 + 1] = curr_y + 0.0f;
+		rcliff_vps[i * 36 + 2] = curr_z + -1.0f * (float)((i + 1) * 4);
+		// point 1 (road point 1 - back)
+		rcliff_vps[i * 36 + 3] = curr_x + 2.0f;
+		rcliff_vps[i * 36 + 4] = curr_y + 0.0f;
+		rcliff_vps[i * 36 + 5] = curr_z + -1.0f * (float)(i * 4);
+		// point 2 (previous point but up 1)
+		rcliff_vps[i * 36 + 6] = curr_x + 2.0f + rcliff_middle_x_off;
+		rcliff_vps[i * 36 + 7] = curr_y + 2.0f;
+		rcliff_vps[i * 36 + 8] = curr_z + -1.0f * (float)(i * 4);
+		// point 3 (same again)
+		rcliff_vps[i * 36 + 9] = curr_x + 2.0f + rcliff_middle_x_off;
+		rcliff_vps[i * 36 + 10] = curr_y + 2.0f;
+		rcliff_vps[i * 36 + 11] = curr_z + -1.0f * (float)(i * 4);
+		// point 4 (previous point but forward)
+		rcliff_vps[i * 36 + 12] = curr_x + 2.0f + x_off + rcliff_middle_x_off;
+		rcliff_vps[i * 36 + 13] = curr_y + 2.0f;
+		rcliff_vps[i * 36 + 14] = curr_z + -1.0f * (float)((i + 1) * 4);
+		// point 5 (back to the zeroth point)
+		rcliff_vps[i * 36 + 15] = curr_x + 2.0f + x_off;
+		rcliff_vps[i * 36 + 16] = curr_y + 0.0f;
+		rcliff_vps[i * 36 + 17] = curr_z + -1.0f * (float)((i + 1) * 4);
+		
+		//
+		// 2nd row on right-hand cliff
+		
+		// point 6 (road point 2 - forward)
+		rcliff_vps[i * 36 + 18] = curr_x + 2.0f + x_off + rcliff_middle_x_off;
+		rcliff_vps[i * 36 + 19] = curr_y + 2.0f;
+		rcliff_vps[i * 36 + 20] = curr_z + -1.0f * (float)((i + 1) * 4);
+		// point 7 (road point 1 - back)
+		rcliff_vps[i * 36 + 21] = curr_x + 2.0f + rcliff_middle_x_off;
+		rcliff_vps[i * 36 + 22] = curr_y + 2.0f;
+		rcliff_vps[i * 36 + 23] = curr_z + -1.0f * (float)(i * 4);
+		// point 8 (previous point but up 1)
+		rcliff_vps[i * 36 + 24] = curr_x + 2.0f + rcliff_top_x_off;
+		rcliff_vps[i * 36 + 25] = curr_y + 12.0f;
+		rcliff_vps[i * 36 + 26] = curr_z + -1.0f * (float)(i * 4);
+		// point 9 (same again)
+		rcliff_vps[i * 36 + 27] = curr_x + 2.0f + rcliff_top_x_off;
+		rcliff_vps[i * 36 + 28] = curr_y + 12.0f;
+		rcliff_vps[i * 36 + 29] = curr_z + -1.0f * (float)(i * 4);
+		// point 10 (previous point but forward)
+		rcliff_vps[i * 36 + 30] = curr_x + 2.0f + x_off + rcliff_top_x_off;
+		rcliff_vps[i * 36 + 31] = curr_y + 12.0f;
+		rcliff_vps[i * 36 + 32] = curr_z + -1.0f * (float)((i + 1) * 4);
+		// point 11 (back to the zeroth point)
+		rcliff_vps[i * 36 + 33] = curr_x + 2.0f + x_off + rcliff_middle_x_off;
+		rcliff_vps[i * 36 + 34] = curr_y + 2.0f;
+		rcliff_vps[i * 36 + 35] = curr_z + -1.0f * (float)((i + 1) * 4);
+		
 		curr_x = curr_x + x_off;
 		// TODO z as well instead of i *
 	}
 	glBindBuffer (GL_ARRAY_BUFFER, vp_vbo);
 	glBufferData (GL_ARRAY_BUFFER, vps_sz, vps, GL_STATIC_DRAW);
 	free (vps);
+	
+	glBindBuffer (GL_ARRAY_BUFFER, rcliff_vp_vbo);
+	glBufferData (GL_ARRAY_BUFFER, rcliff_vps_sz, rcliff_vps, GL_STATIC_DRAW);
+	free (rcliff_vps);
 	
 	vts_sz = num_terrain_segs * 6 * 2 * sizeof (float);
 	vts = (float*)malloc (vts_sz);
@@ -153,7 +243,7 @@ Road segment created in buffer like this (birds-eye view of road):
 	glBufferData (GL_ARRAY_BUFFER, vts_sz, vts, GL_STATIC_DRAW);
 	free (vts);
 	
-	glBindVertexArray (terrain_vao);
+	glBindVertexArray (road_vao);
 	glEnableVertexAttribArray (0);
 	glBindBuffer (GL_ARRAY_BUFFER, vp_vbo);
 	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
@@ -161,21 +251,39 @@ Road segment created in buffer like this (birds-eye view of road):
 	glBindBuffer (GL_ARRAY_BUFFER, vt_vbo);
 	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 	
+	glBindVertexArray (rcliff_vao);
+	glEnableVertexAttribArray (0);
+	glBindBuffer (GL_ARRAY_BUFFER, rcliff_vp_vbo);
+	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	
 	return true;
 }
 
 void draw_terrain () {
 	glActiveTexture (GL_TEXTURE0);
-	glBindTexture (GL_TEXTURE_2D, terrain_tex);
+	glBindTexture (GL_TEXTURE_2D, road_tex);
 	
-	glUseProgram (terrain_sp);
+	glUseProgram (road_sp);
 	if (cam_V_dirty) {
-		glUniformMatrix4fv (terrain_V_loc, 1, GL_FALSE, V.m);
+		glUniformMatrix4fv (road_V_loc, 1, GL_FALSE, V.m);
 	}
 	if (cam_P_dirty) {
-		glUniformMatrix4fv (terrain_P_loc, 1, GL_FALSE, P.m);
+		glUniformMatrix4fv (road_P_loc, 1, GL_FALSE, P.m);
 	}
 	
-	glBindVertexArray (terrain_vao);
-	glDrawArrays (GL_TRIANGLES, 0, terrain_point_count);
+	glBindVertexArray (road_vao);
+	glDrawArrays (GL_TRIANGLES, 0, road_point_count);
+	
+	glUseProgram (rcliff_sp);
+	if (cam_V_dirty) {
+		glUniformMatrix4fv (rcliff_V_loc, 1, GL_FALSE, V.m);
+	}
+	if (cam_P_dirty) {
+		glUniformMatrix4fv (rcliff_P_loc, 1, GL_FALSE, P.m);
+		glUniform1f (rcliff_h_loc, (float)gl_height);
+		glUniform1f (rcliff_w_loc, (float)gl_width);
+	}
+	
+	glBindVertexArray (rcliff_vao);
+	glDrawArrays (GL_TRIANGLES, 0, rcliff_point_count);
 }
