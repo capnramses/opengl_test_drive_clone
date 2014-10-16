@@ -1,4 +1,6 @@
 #include "gl_utils.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -127,7 +129,7 @@ bool parse_file_into_str (const char* file_name, char* shader_str) {
 // get a shader file's character count
 // 0 on error
 unsigned int get_file_size (const char* file_name) {
-	FILE* fp = fopen (file_name , "r");
+	FILE* fp = fopen (file_name , "r"); // could be rb for binary??
 	if (!fp) {
 		fprintf (stderr, "ERROR: opening file %s\n", file_name);
 		return 0;
@@ -136,4 +138,46 @@ unsigned int get_file_size (const char* file_name) {
 	int sz = ftell (fp);
 	fclose (fp);
 	return sz;
+}
+
+//
+// load an image using stb_image
+// create gl texture, copy it over
+// return texture I.D.
+GLuint create_texture_from_file (const char* file_name) {
+	GLuint tex;
+	int x,y,n;
+	unsigned char* data;
+	
+	data = stbi_load (file_name, &x, &y, &n, 0);
+	if (!data) {
+		fprintf (stderr, "ERROR: could not load texture from %s\n", file_name);
+		exit (1);
+	}
+	printf ("loaded image %s with [%i,%i] res and %i chans...\n",
+		file_name, x, y, n);
+	
+	// TODO npot check and flip upside-down
+	
+	glGenTextures (1, &tex);
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, tex);
+	glTexImage2D (
+		GL_TEXTURE_2D,
+		0,
+		GL_RGBA,
+		x,
+		y,
+		0,
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		data
+	);
+	stbi_image_free(data);
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	
+	return tex;
 }

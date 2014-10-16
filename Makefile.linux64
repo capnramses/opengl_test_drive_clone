@@ -11,6 +11,7 @@ OBJS = \
 	obj/main.o\
 	obj/gl_utils.o\
 	obj/terrain.o\
+	obj/camera.o\
 	obj/obj_parser.o
 
 .PHONY : all

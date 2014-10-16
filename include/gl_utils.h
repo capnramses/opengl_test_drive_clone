@@ -7,6 +7,7 @@
 bool start_gl (int width, int height);
 GLuint link_programme_from_files (const char* vs_file_name,
 	const char* fs_file_name);
+GLuint create_texture_from_file (const char* file_name);
 
 bool parse_file_into_str (const char* file_name, char* shader_str);
 unsigned int get_file_size (const char* file_name);
