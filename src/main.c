@@ -3,6 +3,7 @@
 #include "obj_parser.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "terrain.h"
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
@@ -20,7 +21,9 @@ int main () {
 		fprintf (stderr, "ERROR: could not start opengl\n");
 		return 1;
 	}
-	
+
+	init_terrain ();
+
 	sp = link_programme_from_files (SWORD_VS, SWORD_FS);
 
 	glEnable (GL_DEPTH_TEST);

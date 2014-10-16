@@ -10,6 +10,7 @@ SYS_LIB = -lGL -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lm
 OBJS = \
 	obj/main.o\
 	obj/gl_utils.o\
+	obj/terrain.o\
 	obj/obj_parser.o
 
 .PHONY : all

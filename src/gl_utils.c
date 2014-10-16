@@ -16,6 +16,8 @@ bool start_gl (int width, int height) {
 	const GLubyte* renderer;
 	const GLubyte* version;
 	
+	printf ("Init OpenGL...\n");
+	
 	gl_width = width;
 	gl_height = height;
 	
