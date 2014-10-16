@@ -35,7 +35,15 @@ void init_terrain () {
 	glGenVertexArrays (1, &terrain_vao);
 	
 	// gen some terrain blocks
-	gen_terrain_block (vec3 (-2.0, 0.0, 0.0));
+	gen_terrain_block (vec3 (0.0, 0.0, 0.0));
+}
+
+//
+// generate a random x-offset for a road segment
+float rand_road_offs () {
+	float o = (float)rand () / (float)RAND_MAX;
+	o *= 1.0 - 0.5; // -0.1 to + 0.1
+	return o;
 }
 
 //
@@ -54,6 +62,11 @@ bool gen_terrain_block (vec3 start_left) {
 	float* vts = NULL;
 	GLuint vp_vbo, vt_vbo;
 	GLuint vps_sz, vts_sz;
+	float curr_x, curr_y, curr_z;
+	
+	curr_x = start_left.v[0];
+	curr_y = start_left.v[1];
+	curr_z = start_left.v[2];
 	
 	glGenBuffers (1, &vp_vbo);
 	glGenBuffers (1, &vt_vbo);
@@ -81,30 +94,34 @@ Road segment created in buffer like this (birds-eye view of road):
 	// TODO add random variation to X
 	// TODO add curve functions to X
 	for (i = 0; i < num_terrain_segs; i++) {
+		float x_off = rand_road_offs ();
 		// point 0
-		vps[i * 18 + 0] = -2.0f;
-		vps[i * 18 + 1] = 0.0f;
-		vps[i * 18 + 2] = -1.0f * (float)(i * 4);
+		vps[i * 18 + 0] = curr_x + -2.0f;
+		vps[i * 18 + 1] = curr_y + 0.0f;
+		vps[i * 18 + 2] = curr_z + -1.0f * (float)(i * 4);
 		// point 1
-		vps[i * 18 + 3] = 2.0f;
-		vps[i * 18 + 4] = 0.0f;
-		vps[i * 18 + 5] = -1.0f * (float)(i * 4);
+		vps[i * 18 + 3] = curr_x + 2.0f;
+		vps[i * 18 + 4] = curr_y + 0.0f;
+		vps[i * 18 + 5] = curr_z + -1.0f * (float)(i * 4);
 		// point 2
-		vps[i * 18 + 6] = 2.0f;
-		vps[i * 18 + 7] = 0.0f;
-		vps[i * 18 + 8] = -1.0f * (float)((i + 1) * 4);
+		vps[i * 18 + 6] = curr_x + 2.0f + x_off;
+		vps[i * 18 + 7] = curr_y + 0.0f;
+		vps[i * 18 + 8] = curr_z + -1.0f * (float)((i + 1) * 4);
 		// point 3
-		vps[i * 18 + 9] = 2.0f;
-		vps[i * 18 + 10] = 0.0f;
-		vps[i * 18 + 11] = -1.0f * (float)((i + 1) * 4);
+		vps[i * 18 + 9] = curr_x + 2.0f + x_off;
+		vps[i * 18 + 10] = curr_y + 0.0f;
+		vps[i * 18 + 11] = curr_z + -1.0f * (float)((i + 1) * 4);
 		// point 4
-		vps[i * 18 + 12] = -2.0f;
-		vps[i * 18 + 13] = 0.0f;
-		vps[i * 18 + 14] = -1.0f * (float)((i + 1) * 4);
+		vps[i * 18 + 12] = curr_x + -2.0f + x_off;
+		vps[i * 18 + 13] = curr_y + 0.0f;
+		vps[i * 18 + 14] = curr_z + -1.0f * (float)((i + 1) * 4);
 		// point 5
-		vps[i * 18 + 15] = -2.0f;
-		vps[i * 18 + 16] = 0.0f;
-		vps[i * 18 + 17] = -1.0f * (float)(i * 4);
+		vps[i * 18 + 15] = curr_x + -2.0f;
+		vps[i * 18 + 16] = curr_y + 0.0f;
+		vps[i * 18 + 17] = curr_z + -1.0f * (float)(i * 4);
+		
+		curr_x = curr_x + x_off;
+		// TODO z as well instead of i *
 	}
 	glBindBuffer (GL_ARRAY_BUFFER, vp_vbo);
 	glBufferData (GL_ARRAY_BUFFER, vps_sz, vps, GL_STATIC_DRAW);
