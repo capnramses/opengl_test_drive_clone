@@ -2,6 +2,7 @@
 #include "maths_funcs.h"
 #include "camera.h"
 #include "terrain.h"
+#include "dash.h"
 
 /*#include "obj_parser.h"
 "*/
@@ -19,6 +20,7 @@ int main () {
 
 	init_cam ();
 	init_terrain ();
+	init_dash ();
 
 	glEnable (GL_DEPTH_TEST);
 	glDepthFunc (GL_LESS);
@@ -29,6 +31,7 @@ int main () {
 		glViewport (0, 0, gl_width, gl_height);
 		
 		draw_terrain ();
+		draw_dash ();
 
 		// can expect everything has updated camera matrices by now
 		cam_P_dirty = false;

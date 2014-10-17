@@ -12,7 +12,8 @@ OBJS = \
 	obj/gl_utils.o\
 	obj/terrain.o\
 	obj/camera.o\
-	obj/obj_parser.o
+	obj/obj_parser.o \
+	obj/dash.o
 
 .PHONY : all
 all : binary
