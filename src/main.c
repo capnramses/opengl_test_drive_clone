@@ -61,6 +61,9 @@ int main () {
 		glViewport (0, 0, gl_width, gl_height);
 		
 		draw_terrain ();
+		// i dont want the dashboard to ever intersect with background so
+		// i do a clear of the depth buffer
+		glClear (GL_DEPTH_BUFFER_BIT);
 		draw_dash ();
 
 		// can expect everything has updated camera matrices by now

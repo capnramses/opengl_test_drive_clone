@@ -57,7 +57,7 @@ void init_terrain () {
 // generate a random x-offset for a road segment
 float rand_road_offs () {
 	float o = (float)rand () / (float)RAND_MAX;
-	o *= 1.0 - 0.5; // -0.1 to + 0.1
+	o = o * 2.0 - 1.0; // -0.1 to + 0.1
 	return o;
 }
 

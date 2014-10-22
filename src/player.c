@@ -7,7 +7,7 @@
 #define NUM_GEARS 4
 
 float curr_heading = 0.0f;
-vec3 curr_pos = vec3 (0.0f, 1.0f, 0.0f);
+vec3 curr_pos = vec3 (1.0f, 1.0f, 0.0f);
 float curr_speed = 0.0f;
 float turn_speed = 20.0f;
 float gear_accel[NUM_GEARS] = {

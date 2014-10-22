@@ -3,6 +3,7 @@
 resized
 * added player.c/.h to handle keyboard input etc.
 * basic driving controls
+* fixed terrain gen so that it's -1 to 1 instead of 0 to 1 on x
 
 16 Oct 2014 - anton
 * first commit, project only a plan at this stage
