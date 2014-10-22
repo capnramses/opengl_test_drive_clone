@@ -1,3 +1,9 @@
+22 Oct 2014 - anton
+* added callback with GLFW to handle updating perspective matrix when window is
+resized
+* added player.c/.h to handle keyboard input etc.
+* basic driving controls
+
 16 Oct 2014 - anton
 * first commit, project only a plan at this stage
 * added slight randomness to X for each segment so that there are no

@@ -14,9 +14,10 @@
 GLuint dash_vao;
 int dash_point_count;
 GLuint dash_sp;
-GLint dash_V_loc;
+GLint dash_M_loc, dash_V_loc;
 GLint dash_P_loc;
 GLint dash_w_loc, dash_h_loc;
+mat4 dash_M;
 
 bool init_dash () {
 	float* points = NULL;
@@ -25,6 +26,8 @@ bool init_dash () {
 	GLuint vp_vbo, vt_vbo, vn_vbo;
 
 	printf ("Init dashboard...\n");
+	
+	dash_M = identity_mat4 ();
 	
 	if (!load_obj_file (
 		DASH_MESH,
@@ -70,10 +73,15 @@ bool init_dash () {
 	dash_sp = link_programme_from_files (DASH_VS, DASH_FS);
 	dash_P_loc = glGetUniformLocation (dash_sp, "P");
 	dash_V_loc = glGetUniformLocation (dash_sp, "V");
+	dash_M_loc = glGetUniformLocation (dash_sp, "M");
 	dash_w_loc = glGetUniformLocation (dash_sp, "w");
 	dash_h_loc = glGetUniformLocation (dash_sp, "h");
 	
 	return true;
+}
+
+void move_dash (vec3 p) {
+	dash_M = translate (identity_mat4 (), p + vec3 (0.0f, 0.0f, -1.125f));
 }
 
 void draw_dash () {
@@ -87,6 +95,7 @@ void draw_dash () {
 		glUniform1f (dash_w_loc, (float)gl_width);
 	}
 	
+	glUniformMatrix4fv (dash_M_loc, 1, GL_FALSE, dash_M.m);
 	glBindVertexArray (dash_vao);
 	glDrawArrays (GL_TRIANGLES, 0, dash_point_count);
 }

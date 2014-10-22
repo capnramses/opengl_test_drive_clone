@@ -4,6 +4,7 @@
 #include "maths_funcs.h"
 
 void init_cam ();
+void recalc_perspective ();
 
 extern mat4 P;
 extern mat4 V;

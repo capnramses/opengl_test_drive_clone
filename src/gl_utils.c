@@ -1,6 +1,7 @@
 #include "gl_utils.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "camera.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -10,6 +11,8 @@
 int gl_width;
 int gl_height;
 GLFWwindow* gl_window;
+
+void window_resize_callback (GLFWwindow* window, int width, int height);
 
 //
 // start opengl window
@@ -42,6 +45,8 @@ bool start_gl (int width, int height) {
 		return false;
 	}
 	glfwMakeContextCurrent (gl_window);
+	// handle window resizing - adjust camera perspective
+	glfwSetWindowSizeCallback (gl_window, window_resize_callback);
 
 	glewExperimental = GL_TRUE;
 	glewInit ();
@@ -205,3 +210,14 @@ GLuint create_texture_from_file (const char* file_name) {
 	
 	return tex;
 }
+
+//
+// function is automatically called when window is resized
+void window_resize_callback (GLFWwindow* window, int width, int height) {
+	printf ("window addr.%p resized to %ix%i\n", (void*)window, width, height);
+	gl_width = width;
+	gl_height = height;
+	// recalculate projection matrix here
+	recalc_perspective ();
+}
+

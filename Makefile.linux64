@@ -13,7 +13,8 @@ OBJS = \
 	obj/terrain.o\
 	obj/camera.o\
 	obj/obj_parser.o \
-	obj/dash.o
+	obj/dash.o \
+	obj/player.o
 
 .PHONY : all
 all : binary

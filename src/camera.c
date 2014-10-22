@@ -14,12 +14,17 @@ float far = 1000.0f;
 
 void init_cam () {
 	vec3 targ_pos, up;
-	float aspect = 1.0f;
 	
 	targ_pos = cam_pos + vec3 (0.0f, 0.0f, -10.0f);
 	up = normalise (vec3 (0.0f, 1.0f, -0.1f));
 	V = look_at (cam_pos, targ_pos, up);
 	cam_V_dirty = true;
+	
+	recalc_perspective ();
+}
+
+void recalc_perspective () {
+	float aspect = 1.0f;
 	
 	aspect = (float)gl_width / (float)gl_height;
 	P = perspective (fovy, aspect, near, far);
