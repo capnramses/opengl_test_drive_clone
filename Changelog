@@ -1,3 +1,7 @@
+23 Oct 2014 - anton
+* entire level's worth of road lengths are generated in a loop and all are
+drawn at once (no optimisation yet)
+
 22 Oct 2014 - anton
 * added callback with GLFW to handle updating perspective matrix when window is
 resized

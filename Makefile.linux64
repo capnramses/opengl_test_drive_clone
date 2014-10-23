@@ -14,7 +14,8 @@ OBJS = \
 	obj/camera.o\
 	obj/obj_parser.o \
 	obj/dash.o \
-	obj/player.o
+	obj/player.o \
+	obj/stb_image_write.o
 
 .PHONY : all
 all : binary

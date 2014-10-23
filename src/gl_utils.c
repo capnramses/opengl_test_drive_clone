@@ -2,6 +2,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "camera.h"
+#include "stb_image_write.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -11,6 +12,14 @@
 int gl_width;
 int gl_height;
 GLFWwindow* gl_window;
+
+int myargc;
+char** myargv;
+
+unsigned char* g_video_memory_start = NULL;
+unsigned char* g_video_memory_ptr = NULL;
+int g_video_seconds_total = 10;
+int g_video_fps = 25;
 
 void window_resize_callback (GLFWwindow* window, int width, int height);
 
@@ -221,3 +230,67 @@ void window_resize_callback (GLFWwindow* window, int width, int height) {
 	recalc_perspective ();
 }
 
+void reserve_video_memory () {
+	// 480 MB at 800x800 resolution 230.4 MB at 640x480 resolution
+	g_video_memory_ptr = (unsigned char*)malloc (
+		gl_width * gl_height * 3 * g_video_fps * g_video_seconds_total
+	);
+	g_video_memory_start = g_video_memory_ptr;
+}
+
+void grab_video_frame () {
+	// copy frame-buffer into 24-bit rgbrgb...rgb image
+	glReadPixels (
+		0, 0, gl_width, gl_height, GL_RGB, GL_UNSIGNED_BYTE, g_video_memory_ptr
+	);
+	// move video pointer along to the next frame's worth of bytes
+	g_video_memory_ptr += gl_width * gl_height * 3;
+}
+
+bool dump_video_frame () {
+	static long int frame_number = 0;
+	printf ("writing video frame %li\n", frame_number);
+	// write into a file
+	char name[1024];
+	sprintf (name, "video_frame_%03ld.png", frame_number);
+	
+	unsigned char* last_row = g_video_memory_ptr +
+		(gl_width * 3 * (gl_height - 1));
+	if (!stbi_write_png (name, gl_width, gl_height, 3, last_row, -3 * gl_width)) {
+		fprintf (stderr, "ERROR: could not write video file %s\n", name);
+		return false;
+	}
+
+	frame_number++;
+	return true;
+}
+
+bool dump_video_frames () {
+	// reset iterating pointer first
+	g_video_memory_ptr = g_video_memory_start;
+	for (int i = 0; i < g_video_seconds_total * g_video_fps; i++) {
+		if (!dump_video_frame ()) {
+			return false;
+		}
+		g_video_memory_ptr += gl_width * gl_height * 3;
+	}
+	free (g_video_memory_start);
+	printf ("VIDEO IMAGES DUMPED\n");
+	return true;
+}
+
+//
+// M_CheckParm
+// Checks for the given parameter
+// in the program's command line arguments.
+// Returns the argument number (1 to argc-1)
+// or 0 if not present
+int M_CheckParm (const char *check) {
+	int i;
+	for (i = 1; i < myargc; i++) {
+		if (!strcasecmp(check, myargv[i])) {
+			return i;
+		}
+	}
+	return 0;
+}

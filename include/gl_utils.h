@@ -12,8 +12,18 @@ GLuint create_texture_from_file (const char* file_name);
 bool parse_file_into_str (const char* file_name, char* shader_str);
 long get_file_size (const char* file_name);
 
+void reserve_video_memory ();
+void grab_video_frame ();
+bool dump_video_frame ();
+bool dump_video_frames ();
+
+// stole this from DOOM
+int M_CheckParm (const char *check);
+
 extern int gl_width;
 extern int gl_height;
 extern GLFWwindow* gl_window;
+extern int myargc;
+extern char** myargv;
 
 #endif

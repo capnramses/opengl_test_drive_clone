@@ -6,7 +6,7 @@
 #include <GLFW/glfw3.h>
 
 void init_terrain ();
-bool gen_terrain_block (vec3 start_left);
+bool gen_terrain_block (vec3 start_left, int vao_index, vec3* end_left);
 void draw_terrain ();
 
 #endif

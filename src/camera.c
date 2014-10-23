@@ -10,7 +10,7 @@ bool cam_V_dirty = false;
 vec3 cam_pos = vec3 (0.0f, 1.0f, 0.0f);
 float fovy = 67.5f;
 float near = 0.1f;
-float far = 1000.0f;
+float far = 200.0f;
 
 void init_cam () {
 	vec3 targ_pos, up;
