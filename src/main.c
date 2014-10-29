@@ -4,6 +4,7 @@
 #include "terrain.h"
 #include "dash.h"
 #include "player.h"
+#include "traffic.h"
 
 /*#include "obj_parser.h"
 "*/
@@ -39,11 +40,12 @@ int main (int argc, char** argv) {
 	init_cam ();
 	init_terrain ();
 	init_dash ();
+	init_traffic ();
 
 	glEnable (GL_DEPTH_TEST);
 	glDepthFunc (GL_LESS);
 	glClearColor (0.0, 0.5, 0.5, 1.0);
-	//glEnable (GL_CULL_FACE);
+	glEnable (GL_CULL_FACE);
 	glCullFace (GL_BACK);
 	glFrontFace (GL_CCW);
 
@@ -72,6 +74,7 @@ int main (int argc, char** argv) {
 			accum_sim_time -= TIME_STEP_SIZE;
 			
 			update_player (TIME_STEP_SIZE);
+			update_traffic (TIME_STEP_SIZE);
 		}
 		
 		
@@ -79,6 +82,7 @@ int main (int argc, char** argv) {
 		glViewport (0, 0, gl_width, gl_height);
 		
 		draw_terrain ();
+		draw_traffic ();
 		// i dont want the dashboard to ever intersect with background so
 		// i do a clear of the depth buffer
 		glClear (GL_DEPTH_BUFFER_BIT);

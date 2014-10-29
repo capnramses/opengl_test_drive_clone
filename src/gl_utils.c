@@ -21,6 +21,9 @@ unsigned char* g_video_memory_ptr = NULL;
 int g_video_seconds_total = 10;
 int g_video_fps = 25;
 
+// built-in anti-aliasing to smooth jagged diagonal edges of polygons
+int msaa_samples = 16;
+
 void window_resize_callback (GLFWwindow* window, int width, int height);
 
 //
@@ -46,6 +49,8 @@ bool start_gl (int width, int height) {
 	glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 0);
 	glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	glfwWindowHint (GLFW_SAMPLES, msaa_samples);
 
 	gl_window = glfwCreateWindow (gl_width, gl_height, "OpenGL Test Drive Clone",
 		NULL, NULL);
@@ -212,10 +217,15 @@ GLuint create_texture_from_file (const char* file_name) {
 		data
 	);
 	stbi_image_free(data);
+	glGenerateMipmap (GL_TEXTURE_2D);
 	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	float max_aniso = 0.0f;
+	glGetFloatv (GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_aniso);
+	// set the maximum!
+	glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, max_aniso);
 	
 	return tex;
 }

@@ -2,7 +2,6 @@
 
 in vec2 st;
 in vec3 n_eye;
-in float dist;
 uniform float h, w;
 out vec4 frag_colour;
 
