@@ -178,7 +178,7 @@ long get_file_size (const char* file_name) {
 	}
 	fseek (fp, 0, SEEK_END);
 	long sz = ftell (fp);
-	printf ("debug: %li bytes long\n", sz);
+	//printf ("debug: %li bytes long\n", sz);
 	fclose (fp);
 	return sz;
 }
@@ -303,4 +303,35 @@ int M_CheckParm (const char *check) {
 		}
 	}
 	return 0;
+}
+
+//
+// check a framebuffer was created properly
+bool verify_bound_framebuffer () {
+	GLenum status = glCheckFramebufferStatus (GL_FRAMEBUFFER);
+	if (GL_FRAMEBUFFER_COMPLETE != status) {
+		fprintf (stderr, "ERROR: incomplete framebuffer\n");
+		if (GL_FRAMEBUFFER_UNDEFINED == status) {
+			fprintf (stderr, "GL_FRAMEBUFFER_UNDEFINED\n");
+		} else if (GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT == status) {
+			fprintf (stderr, "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT\n");
+		} else if (GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT == status) {
+			fprintf (stderr, "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT\n");
+		} else if (GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER == status) {
+			fprintf (stderr, "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER\n");
+		} else if (GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER== status) {
+			fprintf (stderr, "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER\n");
+		} else if (GL_FRAMEBUFFER_UNSUPPORTED == status) {
+			fprintf (stderr, "GL_FRAMEBUFFER_UNSUPPORTED\n");
+		} else if (GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE == status) {
+			fprintf (stderr, "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE\n");
+		} else if (GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS == status) {
+			fprintf (stderr, "GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS\n");
+		} else {
+			fprintf (stderr, "unspecified error - this shouldn't happen.\n");
+		}
+		return false;
+	}
+	printf ("framebuffer is complete\n");
+	return true;
 }

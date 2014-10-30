@@ -16,6 +16,9 @@ obj/
 # backup files from text editors #
 ##################################
 *.save*
+*.blend1
+*.blend2
+*.blend3
 
 # OS generated files #
 ######################

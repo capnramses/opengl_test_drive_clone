@@ -100,7 +100,7 @@ bool gen_terrain_block (vec3 start_left, int vao_index, vec3* end_left) {
 	glGenBuffers (1, &lcliff_vp_vbo);
 	
 	type = rand () % 4;
-	printf ("block type %i gend\n", type);
+	//printf ("block type %i gend\n", type);
 	
 	vps_sz = num_terrain_segs * 6 * 3 * sizeof (float);
 	vps = (float*)malloc (vps_sz);

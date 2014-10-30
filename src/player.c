@@ -4,6 +4,12 @@
 #include "maths_funcs.h"
 #include "dash.h"
 
+/* TODO
+
+gear ratio should be
+multiply speed, divide acceleration
+*/
+
 #define NUM_GEARS 4
 
 float curr_heading = 0.0f;
@@ -78,8 +84,7 @@ void update_player (double elapsed) {
 		rotate_y_deg (identity_mat4 (), curr_heading) *
 		vec4 (0.0f, 0.0f, -1.0, 0.0f)
 	);*/
-	vec3 targ = curr_pos + vec3 (0.0f, 0.0f, -1.0);
-	V = look_at (curr_pos, targ, vec3 (0.0f, 1.0f, 0.0f));
-	cam_V_dirty = true;
+	
+	move_cam (curr_pos);
 }
 

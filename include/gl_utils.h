@@ -20,6 +20,9 @@ bool dump_video_frames ();
 // stole this from DOOM
 int M_CheckParm (const char *check);
 
+// check a secondary framebuffer was created okay
+bool verify_bound_framebuffer ();
+
 extern int gl_width;
 extern int gl_height;
 extern GLFWwindow* gl_window;

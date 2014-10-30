@@ -77,7 +77,18 @@ int main (int argc, char** argv) {
 			update_traffic (TIME_STEP_SIZE);
 		}
 		
+		//
+		// draw scene for rear-vision mirror
+		// this renders to a texture
+		switch_to_rear_view ();
+		glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glViewport (0, 0, CAM_TEX_WIDTH, CAM_TEX_HEIGHT);
+		draw_terrain ();
+		draw_traffic ();
 		
+		//
+		// draw normal scene
+		switch_to_front_view ();
 		glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glViewport (0, 0, gl_width, gl_height);
 		

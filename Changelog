@@ -1,3 +1,8 @@
+30 Oct 2014
+* truck model and truck loader/updater/drawer code
+* moving wheels for the trucks (trucks don't drive yet though)
+* rear-vision mirror
+
 23 Oct 2014 - anton
 * entire level's worth of road lengths are generated in a loop and all are
 drawn at once (no optimisation yet)
