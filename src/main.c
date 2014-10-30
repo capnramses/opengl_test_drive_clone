@@ -51,7 +51,7 @@ int main (int argc, char** argv) {
 
 	double video_timer = 0.0; // time video has been recording
 	double video_dump_timer = 0.0; // timer for next frame grab
-	double frame_time = 0.04; // 1/25 seconds of time
+	double frame_time = 1.0 / (double)g_video_fps; // 1/25 seconds of time
 	prev_time = glfwGetTime ();
 	while (!glfwWindowShouldClose (gl_window)) {
 		// work out how much time has passed
@@ -64,7 +64,9 @@ int main (int argc, char** argv) {
 			video_timer += elapsed;
 			video_dump_timer += elapsed;
 			// only record 10s of video, then quit
-			if (video_timer > 10.0) {
+			if (video_timer > (double)g_video_seconds_total) {
+				printf ("video timer is %lf / %lf\n",
+					video_timer, (double)g_video_seconds_total);
 				break;
 			}
 		}

@@ -18,8 +18,8 @@ char** myargv;
 
 unsigned char* g_video_memory_start = NULL;
 unsigned char* g_video_memory_ptr = NULL;
-int g_video_seconds_total = 10;
-int g_video_fps = 25;
+int g_video_seconds_total = 20;
+int g_video_fps = 30;
 
 // built-in anti-aliasing to smooth jagged diagonal edges of polygons
 int msaa_samples = 16;
@@ -259,7 +259,7 @@ void grab_video_frame () {
 
 bool dump_video_frame () {
 	static long int frame_number = 0;
-	printf ("writing video frame %li\n", frame_number);
+	printf ("writing video frame %li\r", frame_number);
 	// write into a file
 	char name[1024];
 	sprintf (name, "video_frame_%03ld.png", frame_number);
@@ -278,10 +278,12 @@ bool dump_video_frame () {
 bool dump_video_frames () {
 	// reset iterating pointer first
 	g_video_memory_ptr = g_video_memory_start;
+	printf ("\n");
 	for (int i = 0; i < g_video_seconds_total * g_video_fps; i++) {
 		if (!dump_video_frame ()) {
 			return false;
 		}
+		printf ("\n");
 		g_video_memory_ptr += gl_width * gl_height * 3;
 	}
 	free (g_video_memory_start);

@@ -7,7 +7,7 @@
 
 // used for size of rear-view camera's viewport
 #define CAM_TEX_WIDTH 256
-#define CAM_TEX_HEIGHT 256
+#define CAM_TEX_HEIGHT 128
 
 void init_cam ();
 void recalc_perspective ();

@@ -28,5 +28,7 @@ extern int gl_height;
 extern GLFWwindow* gl_window;
 extern int myargc;
 extern char** myargv;
+extern int g_video_fps;
+extern int g_video_seconds_total;
 
 #endif
