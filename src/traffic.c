@@ -14,17 +14,21 @@
 #define TRUCK_WHEEL_DIFF "textures/truck_wheel.png"
 #define TRUCK_VS "shaders/truck.vert"
 #define TRUCK_FS "shaders/truck.frag"
-#define MAX_TRUCKS 16
+#define MAX_TRUCKS 128
+#define MAX_LANE_MARKERS 512
 
-vec3 truck_positions[MAX_TRUCKS];
+Vehicle trucks[MAX_TRUCKS];
+vec3 right_lane_markers[MAX_LANE_MARKERS], left_lane_markers[MAX_LANE_MARKERS];
 GLuint truck_vao, truck_wheel_vao;
 int truck_point_count, truck_wheel_point_count;
 int num_trucks;
+int num_right_lane_markers, num_left_lane_markers;
 GLuint truck_sp;
 GLint truck_M_loc, truck_V_loc, truck_P_loc;
 GLuint truck_diff_map, truck_wheel_diff_map;
 float wheel_rot_speed = 500.0f;
 float curr_wheel_rot = 0.0f;
+float truck_drive_speed = 3.5f;
 
 bool init_traffic () {
 	float* points = NULL;
@@ -120,23 +124,109 @@ bool init_traffic () {
 	truck_diff_map = create_texture_from_file (TRUCK_DIFF);
 	truck_wheel_diff_map = create_texture_from_file (TRUCK_WHEEL_DIFF);
 	
-	add_truck (vec3 (-1.0, 0.0, 0.0));
-	add_truck (vec3 (-1.0, 0.0, -10.0));
-	add_truck (vec3 (-1.0, 0.0, -15.0));
+	add_truck_left_lane (0);
+	add_truck_left_lane (1);
+	add_truck_left_lane (2);
+	add_truck_left_lane (3);
+	add_truck_left_lane (5);
+	add_truck_left_lane (8);
+	add_truck_left_lane (13);
+	add_truck_left_lane (20);
+	add_truck_left_lane (30);
+	add_truck_left_lane (35);
+	add_truck_left_lane (50);
+	add_truck_left_lane (60);
+	add_truck_left_lane (90);
+	add_truck_left_lane (110);
+	
+	add_truck_right_lane (4);
+	add_truck_right_lane (8);
+	add_truck_right_lane (20);
+	add_truck_right_lane (25);
+	add_truck_right_lane (35);
+	add_truck_right_lane (48);
+	add_truck_right_lane (55);
+	add_truck_right_lane (60);
+	add_truck_right_lane (65);
+	add_truck_right_lane (67);
+	add_truck_right_lane (69);
+	add_truck_right_lane (70);
+	add_truck_right_lane (130);
+	add_truck_right_lane (150);
 	
 	return true;
 }
 
-bool add_truck (vec3 start_pos) {
+bool add_truck_left_lane (int marker_num) {
 	assert (num_trucks < MAX_TRUCKS);
-	truck_positions[num_trucks] = start_pos;
+	assert (marker_num < num_left_lane_markers);
+	trucks[num_trucks].pos = left_lane_markers[marker_num];
+	trucks[num_trucks].in_left_lane = true;
+	trucks[num_trucks].curr_lane_marker = marker_num;
+	num_trucks++;
+	return true;
+}
+
+
+bool add_truck_right_lane (int marker_num) {
+	assert (num_trucks < MAX_TRUCKS);
+	assert (marker_num < num_right_lane_markers);
+	trucks[num_trucks].pos = right_lane_markers[marker_num];
+	trucks[num_trucks].in_left_lane = false;
+	trucks[num_trucks].curr_lane_marker = marker_num;
 	num_trucks++;
 	return true;
 }
 
 bool update_traffic (double elapsed) {
+	int i;
+	vec3 curr_dest;
+	
 	// rotate truck wheels
 	curr_wheel_rot += (float)elapsed * wheel_rot_speed;
+	
+	// update each truck's movement
+	for (i = 0; i < num_trucks; i++) {
+		// get distance to current road marker
+		// if less than 1m, move onto next marker
+		if (trucks[i].in_left_lane) {
+			float dist;
+			
+			dist = length (trucks[i].pos -
+				left_lane_markers[trucks[i].curr_lane_marker]);
+			if (fabs (dist) < 1.0f) {
+				trucks[i].curr_lane_marker--;
+				if (trucks[i].curr_lane_marker < 0) {
+					// loop around when get to end of road
+					trucks[i].curr_lane_marker = num_left_lane_markers - 1;
+					// teleport back to start
+					trucks[i].pos = left_lane_markers[trucks[i].curr_lane_marker];
+				} // endif node0
+			} // endif dist
+			curr_dest = left_lane_markers[trucks[i].curr_lane_marker];
+		} else { // endif left lane
+			float dist;
+			
+			dist = length (trucks[i].pos -
+				right_lane_markers[trucks[i].curr_lane_marker]);
+			if (fabs (dist) < 1.0f) {
+				trucks[i].curr_lane_marker++;
+				if (trucks[i].curr_lane_marker >= num_right_lane_markers) {
+					// loop around when get to end of road
+					trucks[i].curr_lane_marker = 0;
+					// teleport back to start
+					trucks[i].pos = right_lane_markers[trucks[i].curr_lane_marker];
+				} // endif node0
+			} // endif dist
+			curr_dest = right_lane_markers[trucks[i].curr_lane_marker];
+		}// endif right lane
+			
+		{ // move towards next marker
+			trucks[i].fwd = normalise (curr_dest - trucks[i].pos);
+			trucks[i].pos += trucks[i].fwd * truck_drive_speed * (float)elapsed;
+		}
+		
+	} // endfor
 	return true;
 }
 
@@ -151,43 +241,88 @@ bool draw_traffic () {
 		glUniformMatrix4fv (truck_P_loc, 1, GL_FALSE, P.m);
 	}
 	for (i = 0; i < num_trucks; i++) {
-		mat4 M;
+		mat4 truck_M, R, T, wheel_M;
+		vec3 rgt, up;
 		
 		// truck chassis
 		glActiveTexture (GL_TEXTURE0);
 		glBindTexture (GL_TEXTURE_2D, truck_diff_map);
 		glBindVertexArray (truck_vao);
-		M = translate (identity_mat4 (), truck_positions[i]);
-		glUniformMatrix4fv (truck_M_loc, 1, GL_FALSE, M.m);
+		// build a rotation matrix from fwd,right,up vectors to point truck in
+		// direction it's heading in
+		// this is just an inverse lookAt() - could have done inverse (look_at(..))
+		up = vec3 (0.0f, 1.0f, 0.0f);
+		rgt = cross (up, trucks[i].fwd);
+		R.m[0] = rgt.v[0];
+		R.m[1] = up.v[0];
+		R.m[2] = -trucks[i].fwd.v[0];
+		R.m[3] = 0.0f;
+		R.m[4] = rgt.v[1];
+		R.m[5] = up.v[1];
+		R.m[6] = -trucks[i].fwd.v[1];
+		R.m[7] = 0.0f;
+		R.m[8] = -rgt.v[2];
+		R.m[9] = -up.v[2];
+		R.m[10] = trucks[i].fwd.v[2];
+		R.m[11] = 0.0f;
+		R.m[12] = 0.0f;
+		R.m[13] = 0.0f;
+		R.m[14] = 0.0f;
+		R.m[15] = 1.0f;
+		T = translate (identity_mat4 (), trucks[i].pos);
+		truck_M = T * R;
+		glUniformMatrix4fv (truck_M_loc, 1, GL_FALSE, truck_M.m);
 		glDrawArrays (GL_TRIANGLES, 0, truck_point_count);
 		
 		// add 4 wheels
 		glActiveTexture (GL_TEXTURE0);
 		glBindTexture (GL_TEXTURE_2D, truck_wheel_diff_map);
 		glBindVertexArray (truck_wheel_vao);
-		M = rotate_x_deg (identity_mat4 (), curr_wheel_rot);
-		M = translate (M, truck_positions[i] + vec3 (-0.4f, 0.15, 0.45));
-		glUniformMatrix4fv (truck_M_loc, 1, GL_FALSE, M.m);
+		wheel_M = rotate_x_deg (identity_mat4 (), curr_wheel_rot);
+		wheel_M = translate (wheel_M, vec3 (-0.4f, 0.15, 0.45));
+		// inherit rotation and translation of parent (the truck)
+		wheel_M = truck_M * wheel_M;
+		glUniformMatrix4fv (truck_M_loc, 1, GL_FALSE, wheel_M.m);
 		glDrawArrays (GL_TRIANGLES, 0, truck_wheel_point_count);
 		
 		glBindVertexArray (truck_wheel_vao);
-		M = rotate_x_deg (identity_mat4 (), curr_wheel_rot);
-		M = translate (M, truck_positions[i] + vec3 (0.4f, 0.15, 0.45));
-		glUniformMatrix4fv (truck_M_loc, 1, GL_FALSE, M.m);
+		wheel_M = rotate_x_deg (identity_mat4 (), curr_wheel_rot);
+		wheel_M = translate (wheel_M, vec3 (0.4f, 0.15, 0.45));
+		// inherit rotation and translation of parent (the truck)
+		wheel_M = truck_M * wheel_M;
+		glUniformMatrix4fv (truck_M_loc, 1, GL_FALSE, wheel_M.m);
 		glDrawArrays (GL_TRIANGLES, 0, truck_wheel_point_count);
 		
 		glBindVertexArray (truck_wheel_vao);
-		M = rotate_x_deg (identity_mat4 (), curr_wheel_rot);
-		M = translate (M, truck_positions[i] + vec3 (-0.45f, 0.15, -1.6));
-		glUniformMatrix4fv (truck_M_loc, 1, GL_FALSE, M.m);
+		wheel_M = rotate_x_deg (identity_mat4 (), curr_wheel_rot);
+		wheel_M = translate (wheel_M, vec3 (-0.45f, 0.15, -1.6));
+		// inherit rotation and translation of parent (the truck)
+		wheel_M = truck_M * wheel_M;
+		glUniformMatrix4fv (truck_M_loc, 1, GL_FALSE, wheel_M.m);
 		glDrawArrays (GL_TRIANGLES, 0, truck_wheel_point_count);
 		
 		glBindVertexArray (truck_wheel_vao);
-		M = rotate_x_deg (identity_mat4 (), curr_wheel_rot);
-		M = translate (M, truck_positions[i] + vec3 (0.45f, 0.15, -1.6));
-		glUniformMatrix4fv (truck_M_loc, 1, GL_FALSE, M.m);
+		wheel_M = rotate_x_deg (identity_mat4 (), curr_wheel_rot);
+		wheel_M = translate (wheel_M, vec3 (0.45f, 0.15, -1.6));
+		// inherit rotation and translation of parent (the truck)
+		wheel_M = truck_M * wheel_M;
+		glUniformMatrix4fv (truck_M_loc, 1, GL_FALSE, wheel_M.m);
 		glDrawArrays (GL_TRIANGLES, 0, truck_wheel_point_count);
 	}
 	
+	return true;
+}
+
+bool add_left_lane_marker (vec3 pos) {
+	assert (num_left_lane_markers < MAX_LANE_MARKERS);
+	left_lane_markers[num_left_lane_markers] = pos;
+	num_left_lane_markers++;
+	return true;
+}
+
+bool add_right_lane_marker (vec3 pos) {
+	assert (num_right_lane_markers < MAX_LANE_MARKERS);
+	right_lane_markers[num_right_lane_markers] = pos;
+	num_right_lane_markers++;
 	return true;
 }

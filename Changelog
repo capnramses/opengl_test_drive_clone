@@ -2,6 +2,7 @@
 * truck model and truck loader/updater/drawer code
 * moving wheels for the trucks (trucks don't drive yet though)
 * rear-vision mirror
+* moving truck traffic!
 
 23 Oct 2014 - anton
 * entire level's worth of road lengths are generated in a loop and all are

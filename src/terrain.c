@@ -1,6 +1,7 @@
 #include "terrain.h"
 #include "gl_utils.h"
 #include "camera.h"
+#include "traffic.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -134,6 +135,7 @@ Road segment created in buffer like this (birds-eye view of road):
 		float rcliff_top_x_off = 4.0f;
 		float lcliff_middle_x_off = -25.0f;
 		float lcliff_middle_y = -30.0f;
+		vec3 rlm, llm;
 		
 		x_off = rand_road_offs ();
 		
@@ -166,7 +168,16 @@ Road segment created in buffer like this (birds-eye view of road):
 		vps[i * 18 + 17] = curr_z + -1.0f * (float)(i * 4);
 		
 		// update end of road
-		*end_left = vec3 (vps[i * 18 + 9] - 2.0f, vps[i * 18 + 10], vps[i * 18 + 11]);
+		*end_left = vec3 (
+			vps[i * 18 + 9] - 2.0f,
+			vps[i * 18 + 10],
+			vps[i * 18 + 11]
+		);
+		// let traffic know where this road goes
+		llm = *end_left + vec3 (-0.75f, 0.0f, 0.0f);
+		add_left_lane_marker (llm);
+		rlm = *end_left + vec3 (0.75f, 0.0f, 0.0f);
+		add_right_lane_marker (rlm);
 		
 		//
 		// generate the cliffs on right side
