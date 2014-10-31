@@ -98,6 +98,15 @@ void recalc_perspective () {
 	cam_P_dirty = true;
 }
 
+void set_fovy (float _fovy) {
+	float aspect = 1.0f;
+	
+	fovy = _fovy;
+	aspect = (float)gl_width / (float)gl_height;
+	P = perspective (fovy, aspect, near, far);
+	cam_P_dirty = true;
+}
+
 void switch_to_rear_view () {
 	float aspect = 1.0f;
 	is_forward_cam = false;

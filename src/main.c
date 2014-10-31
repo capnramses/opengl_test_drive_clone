@@ -7,9 +7,6 @@
 #include "traffic.h"
 #include "audio.h"
 
-/*#include "obj_parser.h"
-"*/
-
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
@@ -18,6 +15,9 @@
 #define TIME_STEP_SIZE 0.02 // 50 Hz
 
 bool dump_video;
+// motion blur effect
+bool enable_blur = false;
+int blur_round;
 
 int main (int argc, char** argv) {
 	double prev_time = 0.0;
@@ -95,24 +95,24 @@ int main (int argc, char** argv) {
 		switch_to_front_view ();
 		glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glViewport (0, 0, gl_width, gl_height);
-		
 		draw_terrain ();
 		draw_traffic ();
+		
 		// i dont want the dashboard to ever intersect with background so
 		// i do a clear of the depth buffer
 		glClear (GL_DEPTH_BUFFER_BIT);
 		draw_dash ();
 
-		// can expect everything has updated camera matrices by now
-		cam_P_dirty = false;
-		cam_V_dirty = false;
-		
 		if (dump_video) { // check if recording mode is enabled
 			while (video_dump_timer > frame_time) {
 				grab_video_frame (); // 25 Hz so grab a frame
 				video_dump_timer -= frame_time;
 			}
 		}
+		
+		// can expect everything has updated camera matrices by now
+		cam_P_dirty = false;
+		cam_V_dirty = false;
 
 		glfwPollEvents ();
 		glfwSwapBuffers (gl_window);

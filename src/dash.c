@@ -27,7 +27,7 @@ GLint mirror_M_loc, mirror_V_loc,  mirror_P_loc;
 GLuint mirror_outer_sp;
 GLint mirror_outer_M_loc, mirror_outer_V_loc,  mirror_outer_P_loc;
 
-mat4 dash_M, mirror_M, mirror_outer_M;
+mat4 dash_M, mirror_M, mirror_outer_M, P_boring;
 
 bool init_dash () {
 	float* points = NULL;
@@ -40,6 +40,9 @@ bool init_dash () {
 	dash_M = identity_mat4 ();
 	mirror_M = identity_mat4 ();
 	mirror_outer_M = identity_mat4 ();
+	
+	P_boring = perspective (
+			67.0f, (float)gl_width / (float)gl_height, 0.1f, 200.0f);
 	
 	if (!load_obj_file (
 		DASH_MESH,
@@ -159,7 +162,9 @@ void draw_dash () {
 		glUniformMatrix4fv (dash_V_loc, 1, GL_FALSE, V.m);
 	}
 	if (cam_P_dirty) {
-		glUniformMatrix4fv (dash_P_loc, 1, GL_FALSE, P.m);
+		P_boring = perspective (
+			67.0f, (float)gl_width / (float)gl_height, 0.1f, 200.0f);
+		glUniformMatrix4fv (dash_P_loc, 1, GL_FALSE, P_boring.m);
 		glUniform1f (dash_h_loc, (float)gl_height);
 		glUniform1f (dash_w_loc, (float)gl_width);
 	}
@@ -178,7 +183,7 @@ void draw_dash () {
 		glUniformMatrix4fv (mirror_outer_V_loc, 1, GL_FALSE, V.m);
 	}
 	if (cam_P_dirty) {
-		glUniformMatrix4fv (mirror_outer_P_loc, 1, GL_FALSE, P.m);
+		glUniformMatrix4fv (mirror_outer_P_loc, 1, GL_FALSE, P_boring.m);
 	}
 	glUniformMatrix4fv (mirror_outer_M_loc, 1, GL_FALSE, mirror_outer_M.m);
 	glBindVertexArray (mirror_vao);
@@ -189,7 +194,7 @@ void draw_dash () {
 		glUniformMatrix4fv (mirror_V_loc, 1, GL_FALSE, V.m);
 	}
 	if (cam_P_dirty) {
-		glUniformMatrix4fv (mirror_P_loc, 1, GL_FALSE, P.m);
+		glUniformMatrix4fv (mirror_P_loc, 1, GL_FALSE, P_boring.m);
 	}
 	
 	glUniformMatrix4fv (mirror_M_loc, 1, GL_FALSE, mirror_M.m);

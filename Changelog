@@ -1,3 +1,9 @@
+31 Oct 2014
+* added sounds with irrklang (only linux64 atm)
+* pitch shifting of sounds with speed
+* change focal length of perspective matrix with speed
+* failed attempt at post-processing motion blur
+
 30 Oct 2014
 * truck model and truck loader/updater/drawer code
 * moving wheels for the trucks (trucks don't drive yet though)

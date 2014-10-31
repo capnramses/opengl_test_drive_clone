@@ -19,9 +19,9 @@ float curr_speed = 0.0f;
 float turn_speed = 20.0f;
 float gear_accel[NUM_GEARS] = {
 	0.0f,
+	2.5f,
 	5.0f,
-	10.0f,
-	20.0f
+	10.0f
 };
 int curr_gear_no = 0;
 // check if a key is still held down
@@ -90,5 +90,10 @@ void update_player (double elapsed) {
 	
 	//printf ("s %.2f\n", curr_speed);
 	set_engine_speed (curr_speed + 1.0f);
+	// also change camera perspective as speed changes
+	float fovrange = 150.0f - 67.0f;
+	float fovfac =  fabs(curr_speed) / 30.0f;
+	float fovnew = 67.0f + fovrange * fovfac;
+	set_fovy (fovnew);
 }
 
