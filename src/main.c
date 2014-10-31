@@ -5,6 +5,7 @@
 #include "dash.h"
 #include "player.h"
 #include "traffic.h"
+#include "audio.h"
 
 /*#include "obj_parser.h"
 "*/
@@ -37,6 +38,7 @@ int main (int argc, char** argv) {
 		reserve_video_memory ();
 	}
 
+	init_audio ();
 	init_cam ();
 	init_terrain ();
 	init_dash ();
@@ -121,5 +123,6 @@ int main (int argc, char** argv) {
 	}
 
 	glfwTerminate ();
+	free_audio ();
 	return 0;
 }

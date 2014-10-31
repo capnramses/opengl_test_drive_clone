@@ -3,6 +3,7 @@
 #include "gl_utils.h"
 #include "maths_funcs.h"
 #include "dash.h"
+#include "audio.h"
 
 /* TODO
 
@@ -18,9 +19,9 @@ float curr_speed = 0.0f;
 float turn_speed = 20.0f;
 float gear_accel[NUM_GEARS] = {
 	0.0f,
-	2.0f,
 	5.0f,
-	10.0f
+	10.0f,
+	20.0f
 };
 int curr_gear_no = 0;
 // check if a key is still held down
@@ -86,5 +87,8 @@ void update_player (double elapsed) {
 	);*/
 	
 	move_cam (curr_pos);
+	
+	//printf ("s %.2f\n", curr_speed);
+	set_engine_speed (curr_speed + 1.0f);
 }
 

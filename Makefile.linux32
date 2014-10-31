@@ -1,11 +1,12 @@
-BIN = test_drive
+BIN = drive32
 CC = clang++
 FLAGS = -g -Wall -Wfatal-errors -pedantic -Wextra -fmessage-length=0 -m32
 DEPS = -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"
 INCLUDES = $(wildcard include/*.h)
 INC_DIR = -I include/ -I lib/include/
 LIB_DIR = lib/linux_i386/
-LOC_LIB = $(LIB_DIR)libGLEW.a $(LIB_DIR)libglfw3.a
+LOC_LIB = $(LIB_DIR)libGLEW.a $(LIB_DIR)libglfw3.a \
+	-L$(LIB_DIR) -lIrrKlang
 SYS_LIB = -lGL -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lm
 OBJS = \
 	obj/main.o\
@@ -16,7 +17,8 @@ OBJS = \
 	obj/dash.o \
 	obj/player.o \
 	obj/stb_image_write.o \
-	obj/traffic.o
+	obj/traffic.o \
+	obj/audio.o
 
 .PHONY : all
 all : binary
