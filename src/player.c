@@ -16,7 +16,7 @@ multiply speed, divide acceleration
 float curr_heading = 0.0f;
 vec3 curr_pos = vec3 (1.0f, 0.5f, 0.0f);
 float curr_speed = 0.0f;
-float turn_speed = 20.0f;
+float turn_speed = 50.0f;
 float gear_accel[NUM_GEARS] = {
 	0.0f,
 	2.5f,
@@ -29,7 +29,10 @@ bool was_key_down[1024];
 
 float friction = 0.01f;
 
+
 void update_player (double elapsed) {
+	float wheel_turn = 0.0f;
+
 	// W and S are accelerate and brake
 	// A and D are the steering wheel
 	// Q E are gear up/down
@@ -37,15 +40,20 @@ void update_player (double elapsed) {
 		curr_speed += gear_accel[curr_gear_no] * (float)elapsed;
 	}
 	if (GLFW_PRESS == glfwGetKey (gl_window, 'S')) {
-		curr_speed -= gear_accel[curr_gear_no] * (float)elapsed;
+		curr_speed -= 15.0f * (float)elapsed;
+		if (curr_speed < 0.0f) {
+			curr_speed = 0.0f;
+		}
 	}
-	if (GLFW_PRESS == glfwGetKey (gl_window, 'A')) {
-		curr_heading += turn_speed * (float)elapsed;
-	} else if (GLFW_PRESS == glfwGetKey (gl_window, 'D')) {
-		curr_heading -= turn_speed * (float)elapsed;
-	// when user lets go of steering controls it centres
-	} else {
-		curr_heading = 0.0f;
+	if (curr_speed > 1.0f) {
+		if (GLFW_PRESS == glfwGetKey (gl_window, 'A')) {
+			curr_heading += turn_speed * (float)elapsed;
+			wheel_turn += turn_speed * (float)elapsed;
+		} else if (GLFW_PRESS == glfwGetKey (gl_window, 'D')) {
+			curr_heading -= turn_speed * (float)elapsed;
+			wheel_turn -= turn_speed * (float)elapsed;
+		// when user lets go of steering controls it centres
+		}
 	}
 	if (GLFW_PRESS == glfwGetKey (gl_window, 'Q')) {
 		if (!was_key_down[(int)'Q']) {
@@ -79,15 +87,16 @@ void update_player (double elapsed) {
 	
 	// update dashboard/car interior
 	move_dash (curr_pos);
-	set_steering (curr_heading * 4.0f);
+	set_steering (wheel_turn * 50.0f);
 	
 	// update cam
 	/*vec3 targ = curr_pos + vec3 (
 		rotate_y_deg (identity_mat4 (), curr_heading) *
 		vec4 (0.0f, 0.0f, -1.0, 0.0f)
 	);*/
-	
+	set_heading (curr_heading);
 	move_cam (curr_pos);
+	
 	
 	//printf ("s %.2f\n", curr_speed);
 	set_engine_speed (curr_speed + 1.0f);

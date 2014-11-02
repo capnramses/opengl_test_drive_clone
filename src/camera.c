@@ -18,12 +18,14 @@ float fovy = 67.5f;
 float near = 0.1f;
 float far = 200.0f;
 
+vec3 targ, targ_inv;
+
 void init_cam () {
-	vec3 targ_pos, up;
+	vec3 up;
 	
-	targ_pos = cam_pos + vec3 (0.0f, 0.0f, -10.0f);
+	targ = cam_pos + vec3 (0.0f, 0.0f, -1.0f);
 	up = normalise (vec3 (0.0f, 1.0f, -0.1f));
-	V = look_at (cam_pos, targ_pos, up);
+	V = look_at (cam_pos, targ, up);
 	cam_V_dirty = true;
 	
 	recalc_perspective ();
@@ -88,6 +90,8 @@ void init_cam () {
 
 	// bind the default fb back
 	glBindFramebuffer (GL_FRAMEBUFFER, 0);
+
+	targ = cam_pos + vec3 (0.0f, 0.0f, -1.0);
 }
 
 void recalc_perspective () {
@@ -110,6 +114,7 @@ void set_fovy (float _fovy) {
 void switch_to_rear_view () {
 	float aspect = 1.0f;
 	is_forward_cam = false;
+	
 	move_cam (cam_pos);
 	
 	aspect = 2.5f / 1.0f;
@@ -126,14 +131,18 @@ void switch_to_front_view () {
 }
 
 void move_cam (vec3 pos) {
-	vec3 targ;
 	if (is_forward_cam) {
-		targ = pos + vec3 (0.0f, 0.0f, -1.0);
 		V = look_at (pos, targ, vec3 (0.0f, 1.0f, 0.0f));
 	} else {
-		targ = pos + vec3 (0.0f, 0.25f, 1.0);
-		V = look_at (pos + vec3 (0.0f, 0.25f, 0.0f), targ, vec3 (0.0f, 1.0f, 0.0f));
+		V = look_at (pos + vec3 (0.0f, 0.25f, 0.0f), targ_inv, vec3 (0.0f, 1.0f, 0.0f));
 	}
 	cam_pos = pos;
 	cam_V_dirty = true;
+}
+
+void set_heading (float deg) {
+	vec4 t = vec4 (0.0f, 0.0f, -1.0f, 1.0f);
+	targ = vec3 (rotate_y_deg (identity_mat4 (), deg) * t) + cam_pos;
+	t = vec4 (0.0f, 0.0f, 1.0f, 1.0f);
+	targ_inv = vec3 (rotate_y_deg (identity_mat4 (), deg) * t) + cam_pos;
 }

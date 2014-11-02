@@ -1,6 +1,8 @@
 2 Nov 2014
 * steering wheel
 * moved mirror along a bit
+* added left and right curves randomly to road sections
+* fixed dash camera so doesnt actually move with car
 
 31 Oct 2014
 * added sounds with irrklang (only linux64 atm)

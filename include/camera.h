@@ -15,6 +15,7 @@ void set_fovy (float _fovy);
 void switch_to_rear_view ();
 void switch_to_front_view ();
 void move_cam (vec3 pos);
+void set_heading (float deg);
 
 extern mat4 P;
 extern mat4 V;

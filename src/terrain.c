@@ -100,8 +100,8 @@ bool gen_terrain_block (vec3 start_left, int vao_index, vec3* end_left) {
 	glGenBuffers (1, &rcliff_vp_vbo);
 	glGenBuffers (1, &lcliff_vp_vbo);
 	
-	type = rand () % 4;
-	//printf ("block type %i gend\n", type);
+	type = rand () % 3;
+	printf ("block type %i gend\n", type);
 	
 	vps_sz = num_terrain_segs * 6 * 3 * sizeof (float);
 	vps = (float*)malloc (vps_sz);
@@ -136,8 +136,16 @@ Road segment created in buffer like this (birds-eye view of road):
 		float lcliff_middle_x_off = -25.0f;
 		float lcliff_middle_y = -30.0f;
 		vec3 rlm, llm;
+		float curve_x_offs = 0.0f;
+		float prog;
 		
-		x_off = rand_road_offs ();
+		prog = (float)i / (float)num_terrain_segs;
+		if (1 == type) {
+			curve_x_offs = sinf (prog * M_PI * 0.5f) * 4.0f;
+		} else if (2 == type) {
+			curve_x_offs = sinf (prog * M_PI * 0.5f + M_PI) * 4.0f;
+		}
+		x_off = rand_road_offs () + curve_x_offs;
 		
 		//
 		// generate the road surface
