@@ -79,6 +79,7 @@ void update_player (double elapsed) {
 	
 	// update dashboard/car interior
 	move_dash (curr_pos);
+	set_steering (curr_heading * 4.0f);
 	
 	// update cam
 	/*vec3 targ = curr_pos + vec3 (

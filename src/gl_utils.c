@@ -283,9 +283,9 @@ bool dump_video_frames () {
 		if (!dump_video_frame ()) {
 			return false;
 		}
-		printf ("\n");
 		g_video_memory_ptr += gl_width * gl_height * 3;
 	}
+	printf ("\n");
 	free (g_video_memory_start);
 	printf ("VIDEO IMAGES DUMPED\n");
 	return true;
