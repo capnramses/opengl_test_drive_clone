@@ -13,7 +13,7 @@ bool init_audio () {
 		return false;
 	}
 	// 3rd or 4th parms must be true to 'track' the sound for later mods
-	engine_snd = audio->play2D("audio/engine_small.ogg", true, false, true);
+	engine_snd = audio->play2D("audio/engine_large.ogg", true, false, true);
 	if (!engine_snd) {
 		fprintf (stderr, "ERROR creating engine sound\n");
 		return false;
