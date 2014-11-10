@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 //
 // dimensions of the window drawing surface
@@ -337,3 +338,29 @@ bool verify_bound_framebuffer () {
 	printf ("framebuffer is complete\n");
 	return true;
 }
+
+//
+// using Sean Barrett's stb_image_write.h to quickly convert to PNG
+bool screenshot () {
+	unsigned char* buffer = (unsigned char*)malloc (gl_width * gl_height * 3);
+	glReadPixels (
+		0, 0, gl_width, gl_height, GL_RGB, GL_UNSIGNED_BYTE, buffer
+	);
+	if (!buffer) {
+		fprintf (stderr, "ERROR: could not allocate memory for screen capture\n");
+		return false;
+	}
+	char name[1024];
+	long int t = time (NULL);
+	sprintf (name, "screenshot_%ld.png", t);
+	unsigned char* last_row = buffer + (gl_width * 3 * (gl_height - 1));
+	if (!stbi_write_png (
+		name, gl_width, gl_height, 3, last_row, -3 * gl_width
+	)) {
+		fprintf (stderr, "ERROR: could not write screenshot file %s\n", name);
+		return false;
+	}
+	free (buffer);
+	return true;
+}
+

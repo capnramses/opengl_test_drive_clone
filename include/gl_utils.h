@@ -16,6 +16,7 @@ void reserve_video_memory ();
 void grab_video_frame ();
 bool dump_video_frame ();
 bool dump_video_frames ();
+bool screenshot ();
 
 // stole this from DOOM
 int M_CheckParm (const char *check);

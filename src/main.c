@@ -6,6 +6,7 @@
 #include "player.h"
 #include "traffic.h"
 #include "audio.h"
+#include "text.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -18,6 +19,7 @@ bool dump_video;
 // motion blur effect
 bool enable_blur = false;
 int blur_round;
+int time_text;
 
 int main (int argc, char** argv) {
 	double prev_time = 0.0;
@@ -43,6 +45,22 @@ int main (int argc, char** argv) {
 	init_terrain ();
 	init_dash ();
 	init_traffic ();
+	assert (init_text_rendering (
+		"fonts/freemono.png",
+		"fonts/freemono.meta",
+		gl_width,
+		gl_height
+	));
+	time_text = add_text (
+		"00:00:00",
+		-0.21f,
+		1.0f,
+		110.0f,
+		0.7f,
+		0.7f,
+		0.7f,
+		0.8f
+	);
 
 	glEnable (GL_DEPTH_TEST);
 	glDepthFunc (GL_LESS);
@@ -54,6 +72,7 @@ int main (int argc, char** argv) {
 	double video_timer = 0.0; // time video has been recording
 	double video_dump_timer = 0.0; // timer for next frame grab
 	double frame_time = 1.0 / (double)g_video_fps; // 1/25 seconds of time
+	double time_since_text_up = 0.0;
 	prev_time = glfwGetTime ();
 	while (!glfwWindowShouldClose (gl_window)) {
 		// work out how much time has passed
@@ -81,6 +100,19 @@ int main (int argc, char** argv) {
 			update_traffic (TIME_STEP_SIZE);
 		}
 		
+		// don't update too often that it slows us down
+		time_since_text_up += elapsed;
+		if (time_since_text_up >= 0.05) {
+			int mins = (int)(curr_time / 60.0);
+			int secs = (int)(curr_time - (double)mins * 60.0);
+			double dms = curr_time - (double)mins * 60.0 - (double)secs;
+			int ms = (int)(dms * 100.0);
+			char tmp[32];
+			sprintf (tmp, "%02i:%02i:%02i", mins, secs, ms);
+			update_text (time_text, tmp);
+			time_since_text_up = 0.0;
+		}
+		
 		//
 		// draw scene for rear-vision mirror
 		// this renders to a texture
@@ -102,7 +134,8 @@ int main (int argc, char** argv) {
 		// i do a clear of the depth buffer
 		glClear (GL_DEPTH_BUFFER_BIT);
 		draw_dash ();
-
+		draw_texts ();
+		
 		if (dump_video) { // check if recording mode is enabled
 			while (video_dump_timer > frame_time) {
 				grab_video_frame (); // 25 Hz so grab a frame
@@ -113,6 +146,11 @@ int main (int argc, char** argv) {
 		// can expect everything has updated camera matrices by now
 		cam_P_dirty = false;
 		cam_V_dirty = false;
+		
+		// screenshot on F11
+		if (glfwGetKey (gl_window, GLFW_KEY_F11)) {
+			assert (screenshot ());
+		}
 
 		glfwPollEvents ();
 		glfwSwapBuffers (gl_window);
