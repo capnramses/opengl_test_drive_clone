@@ -26,13 +26,76 @@ float gear_accel[NUM_GEARS] = {
 int curr_gear_no = 0;
 // check if a key is still held down
 bool was_key_down[1024];
-
+bool was_button_down[64];
+bool det_joystick;
 float friction = 0.01f;
 
 
 void update_player (double elapsed) {
 	float wheel_turn = 0.0f;
 
+	if (det_joystick) {
+		const float* axis_values = NULL;
+		const unsigned char* buttons = NULL;
+		float pedal_factor = 0.0f;
+		float brake_factor = 0.0f;
+		float turn_factor = 0.0f;
+		int count = 0;
+		int i;
+		
+		axis_values = glfwGetJoystickAxes (GLFW_JOYSTICK_1, &count);
+		//for (i = 0; i < count; i++) {
+		//	printf ("axis %i) %f\n", i, axis_values[i]);
+		//}
+		
+		count = 0;
+		buttons = glfwGetJoystickButtons (GLFW_JOYSTICK_1, &count);
+		//for (i = 0; i < count; i++) {
+		//	printf ("button %i) %i\n", i, buttons[i]);
+		//}
+		
+		// gear up
+		if (buttons[5]) {
+			if (!was_button_down[5]) {
+				curr_gear_no =
+				curr_gear_no + 1 < NUM_GEARS ? curr_gear_no + 1 : curr_gear_no;
+				printf ("changed gear to %i\n", curr_gear_no);
+				was_button_down[5] = true;
+			}
+		} else {
+			was_button_down[5] = false;
+		}
+		if (buttons[4]) {
+			if (!was_button_down[4]) {
+				curr_gear_no =
+				curr_gear_no = curr_gear_no - 1 >= 0 ? curr_gear_no - 1 : curr_gear_no;
+				printf ("changed gear to %i\n", curr_gear_no);
+				was_button_down[4] = true;
+			}
+		} else {
+			was_button_down[4] = false;
+		}
+		
+		// accel
+		// axis[5] -1 = full pedal down, 1 = released
+		pedal_factor = axis_values[5] * -0.5f + 0.5f;
+		curr_speed += gear_accel[curr_gear_no] * pedal_factor * (float)elapsed;
+		brake_factor = axis_values[2] * 0.5f + 0.5f;
+		//printf ("bf %f\n", brake_factor);
+		curr_speed -= 15.0f * brake_factor * (float)elapsed;
+		if (curr_speed < 0.0f) {
+			curr_speed = 0.0f;
+		}
+		
+		// steering axis 3. 1=left -1=right
+		if (curr_speed > 1.0f) {
+			turn_factor = axis_values[3] * 1.5f;
+			// get rid of noise
+			turn_factor = (float)((int)(turn_factor * 10.0f)) / 10.0f;
+			curr_heading += turn_speed * turn_factor * (float)elapsed;
+			wheel_turn += turn_speed * turn_factor * (float)elapsed;
+		}
+	}
 	// W and S are accelerate and brake
 	// A and D are the steering wheel
 	// Q E are gear up/down
@@ -75,6 +138,7 @@ void update_player (double elapsed) {
 	if (GLFW_RELEASE == glfwGetKey (gl_window, 'E')) {
 		was_key_down[(int)'E'] = false;
 	}
+	
 	
 	// calculate friction so that car slows down if you're not accel or braking
 	float fric_deccel = friction * curr_speed;

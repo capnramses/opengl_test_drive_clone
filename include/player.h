@@ -3,4 +3,6 @@
 
 void update_player (double elapsed);
 
+extern bool det_joystick;
+
 #endif

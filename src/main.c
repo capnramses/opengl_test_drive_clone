@@ -40,6 +40,12 @@ int main (int argc, char** argv) {
 		reserve_video_memory ();
 	}
 
+	if (GL_TRUE == glfwJoystickPresent (GLFW_JOYSTICK_1)) {
+		printf ("Joystick 0 [%s] detected\n",
+			glfwGetJoystickName (GLFW_JOYSTICK_1));
+		det_joystick = true;
+	}
+
 	init_audio ();
 	init_cam ();
 	init_terrain ();
