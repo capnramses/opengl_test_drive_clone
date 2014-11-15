@@ -6,6 +6,10 @@ x as x = start_pos + gradient * factor +- 1.0 for each side. then checks vs
 player x)
 * finish level check (is player z < -800)
 * fullscreen mode and -res command line params
+* hidden mouse cursor
+* crash = stop player for 3s and then reposition on road
+also immune for 2s after that to prevent insta-death
+* smashed windscreen when crashed
 
 13 Nov 2014
 * added gamepad/joystick detection and controls for xbox 360 controller

@@ -49,7 +49,7 @@ int main (int argc, char** argv) {
 	}
 	param = M_CheckParm ("-fs");
 	if (param > 0) {
-		printf ("===display set to full-screen===\n", gl_width, gl_height);
+		printf ("===display set to full-screen===\n");
 		full_screen = true;
 	}
 
@@ -199,8 +199,11 @@ int main (int argc, char** argv) {
 		cam_V_dirty = false;
 		
 		// screenshot on F11
-		if (glfwGetKey (gl_window, GLFW_KEY_F11)) {
+		if (GLFW_PRESS == glfwGetKey (gl_window, GLFW_KEY_F11)) {
 			assert (screenshot ());
+		}
+		if (GLFW_PRESS == glfwGetKey (gl_window, GLFW_KEY_ESCAPE)) {
+			glfwSetWindowShouldClose (gl_window, 1);
 		}
 
 		glfwPollEvents ();

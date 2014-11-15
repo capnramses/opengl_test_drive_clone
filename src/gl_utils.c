@@ -49,7 +49,7 @@ bool start_gl (int width, int height) {
 
 	/* change to 3.2 if on Apple OS X */
 	glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 0);
+	glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);
 	glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
@@ -75,6 +75,8 @@ bool start_gl (int width, int height) {
 	glfwMakeContextCurrent (gl_window);
 	// handle window resizing - adjust camera perspective
 	glfwSetWindowSizeCallback (gl_window, window_resize_callback);
+	// hide mouse
+	glfwSetInputMode (gl_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
 	glewExperimental = GL_TRUE;
 	glewInit ();

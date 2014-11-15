@@ -434,3 +434,21 @@ bool hit_wall (vec3 pos) {
 	return false;
 }
 
+vec3 get_closest_node_to (vec3 pos) {
+	int i;
+	float closest_distsq = 100000.0f;
+	int closest = 0;
+
+	for (i = 1; i < num_right_lane_markers; i++) {
+		float distsq;
+		
+		distsq = length2 (right_lane_markers[i] - pos);
+		if (distsq < closest_distsq) {
+			closest_distsq = distsq;
+			closest = i;
+		}
+	} // endfor
+	
+	return right_lane_markers[closest];
+}
+

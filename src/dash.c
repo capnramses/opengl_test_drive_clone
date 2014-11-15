@@ -19,23 +19,28 @@
 #define MIRROR_OUTER_FS "shaders/mirror_outer.frag"
 #define STEERING_VS "shaders/steering.vert"
 #define STEERING_FS "shaders/steering.frag"
+#define SMASHED_VS "shaders/smashed.vert"
+#define SMASHED_FS "shaders/smashed.frag"
 #define STEERING_DIFF "textures/steering.png"
+#define SMASHED_DIFF "textures/smashed.png"
 
 GLuint dash_vao, mirror_vao, steering_vao;
 int dash_point_count, mirror_point_count, steering_point_count;
 
-GLuint dash_sp, mirror_sp, mirror_outer_sp, steering_sp;
+GLuint dash_sp, mirror_sp, mirror_outer_sp, steering_sp, smashed_sp;
 GLint dash_M_loc, dash_V_loc, dash_P_loc;
 GLint dash_w_loc, dash_h_loc;
 GLint mirror_M_loc, mirror_V_loc,  mirror_P_loc;
 GLint mirror_outer_M_loc, mirror_outer_V_loc,  mirror_outer_P_loc;
 GLint steering_M_loc, steering_V_loc, steering_P_loc;
 GLint steering_w_loc, steering_h_loc;
-GLuint steering_diff_map;
+GLuint steering_diff_map, smashed_diff_map;
 float steering_deg;
 
 mat4 dash_M, mirror_M, mirror_outer_M, steering_M, dash_V, P_boring;
 vec3 dash_pos;
+
+bool draw_smashed;
 
 bool init_dash () {
 	float* points = NULL;
@@ -210,8 +215,11 @@ bool init_dash () {
 	glUseProgram (steering_sp);
 	glUniformMatrix4fv (steering_V_loc, 1, GL_FALSE, dash_V.m);
 	
+	smashed_sp = link_programme_from_files (SMASHED_VS, SMASHED_FS);
+	
 	// textures
 	steering_diff_map = create_texture_from_file (STEERING_DIFF);
+	smashed_diff_map = create_texture_from_file (SMASHED_DIFF);
 	
 	dash_M = translate (identity_mat4 (), vec3 (0.0f, 0.0f, -1.125f));
 	
@@ -237,6 +245,18 @@ void move_dash (vec3 p) {
 }
 
 void draw_dash () {
+	if (draw_smashed) {
+		// smashed!
+		// I turn depth-write (masking) off so the other stuff draw over it
+		glDisable (GL_DEPTH_TEST); // always draw, regarless of other stuff
+		glDepthMask (GL_FALSE); // don't write to depth-buffer
+		glUseProgram (smashed_sp);
+		glActiveTexture (GL_TEXTURE0);
+		glBindTexture (GL_TEXTURE_2D, smashed_diff_map);
+		glDrawArrays (GL_TRIANGLE_STRIP, 0, 4);
+		glDepthMask (GL_TRUE);
+		glEnable (GL_DEPTH_TEST);
+	}
 	glUseProgram (dash_sp);
 	//if (cam_V_dirty) {
 	//	glUniformMatrix4fv (dash_V_loc, 1, GL_FALSE, V.m);
@@ -300,4 +320,5 @@ void draw_dash () {
 	glUniformMatrix4fv (mirror_M_loc, 1, GL_FALSE, mirror_M.m);
 	glBindVertexArray (mirror_vao);
 	glDrawArrays (GL_TRIANGLES, 0, mirror_point_count);
+
 }

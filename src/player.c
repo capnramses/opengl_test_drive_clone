@@ -25,6 +25,8 @@ float gear_accel[NUM_GEARS] = {
 	5.0f,
 	10.0f
 };
+double crash_count_down = 0.0;
+double immune_count_down = 0.0;
 int curr_gear_no = 0;
 // check if a key is still held down
 bool was_key_down[1024];
@@ -44,6 +46,24 @@ bool finished_level () {
 
 void update_player (double elapsed) {
 	float wheel_turn = 0.0f;
+	
+	if (crash_count_down > 0.0) {
+		crash_count_down -= elapsed;
+		draw_smashed = true;
+		if (crash_count_down <= 0.0) {
+			immune_count_down = 1.5;
+			// put player at closest node thing and reset speed etc.
+			curr_heading = 0.0f;
+			curr_speed = 0.0f;
+			curr_gear_no = 0;
+			curr_pos = get_closest_node_to (curr_pos) + vec3 (0.0, 0.5f, 0.0f);
+			draw_smashed = false;
+		}
+		return;
+	}
+	if (immune_count_down > 0.0) {
+		immune_count_down -= elapsed;
+	}
 
 	if (det_joystick) {
 		const float* axis_values = NULL;
@@ -174,24 +194,30 @@ void update_player (double elapsed) {
 	
 	
 	//printf ("s %.2f\n", curr_speed);
-	set_engine_speed (curr_speed + 1.0f);
+	set_engine_speed (curr_speed * 0.75f + 1.0f);
 	// also change camera perspective as speed changes
 	float fovrange = 150.0f - 67.0f;
 	float fovfac =  fabs(curr_speed) / 30.0f;
 	float fovnew = 67.0f + fovrange * fovfac;
 	set_fovy (fovnew);
 	
-	//
-	// crash detection with other vehicles
-	if (hit_truck (curr_pos)) {
-		printf ("we hit a truck!\n");
-		play_crash_snd ();
-	}
-	//
-	// crash detection with terrain
-	if (hit_wall (curr_pos)) {
-		//printf ("we hit terrain!\n");
-		play_crash_snd ();
+	if (immune_count_down <= 0.0) {
+		//
+		// crash detection with other vehicles
+		if (hit_truck (curr_pos)) {
+			printf ("we hit a truck!\n");
+			play_crash_snd ();
+			crash_count_down = 3.0;
+			set_engine_speed (0.0f);
+		}
+		//
+		// crash detection with terrain
+		if (hit_wall (curr_pos)) {
+			//printf ("we hit terrain!\n");
+			play_crash_snd ();
+			crash_count_down = 3.0;
+			set_engine_speed (0.0f);
+		}
 	}
 }
 

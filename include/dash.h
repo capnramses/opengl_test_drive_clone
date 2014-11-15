@@ -8,4 +8,6 @@ void draw_dash ();
 void move_dash (vec3 p);
 void set_steering (float deg);
 
+extern bool draw_smashed;
+
 #endif

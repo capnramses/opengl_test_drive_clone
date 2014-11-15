@@ -17,6 +17,7 @@ bool update_traffic (double elapsed);
 bool draw_traffic ();
 bool add_left_lane_marker (vec3 pos);
 bool add_right_lane_marker (vec3 pos);
+vec3 get_closest_node_to (vec3 pos);
 // detect collision
 bool hit_truck (vec3 pos);
 // detect collision

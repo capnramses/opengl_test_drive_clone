@@ -1,4 +1,4 @@
-#version 400
+#version 410
 
 in vec2 st;
 uniform sampler2D tex0, tex1, tex2, tex3;
