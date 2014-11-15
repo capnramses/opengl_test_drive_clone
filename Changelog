@@ -10,6 +10,7 @@ player x)
 * crash = stop player for 3s and then reposition on road
 also immune for 2s after that to prevent insta-death
 * smashed windscreen when crashed
+* bigger dash
 
 13 Nov 2014
 * added gamepad/joystick detection and controls for xbox 360 controller
