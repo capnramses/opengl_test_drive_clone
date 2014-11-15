@@ -2,6 +2,7 @@
 #include "obj_parser.h"
 #include "gl_utils.h"
 #include "camera.h"
+#include "player.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -16,6 +17,7 @@
 #define TRUCK_FS "shaders/truck.frag"
 #define MAX_TRUCKS 128
 #define MAX_LANE_MARKERS 512
+#define MAX_TRAFFIC_DRAW_DIST 100.0
 
 Vehicle trucks[MAX_TRUCKS];
 vec3 right_lane_markers[MAX_LANE_MARKERS], left_lane_markers[MAX_LANE_MARKERS];
@@ -232,17 +234,37 @@ bool update_traffic (double elapsed) {
 
 bool draw_traffic () {
 	int i;
+	vec3 player_pos;
 	
+	player_pos = get_player_pos ();
 	glUseProgram (truck_sp);
 	if (cam_V_dirty) {
 		glUniformMatrix4fv (truck_V_loc, 1, GL_FALSE, V.m);
+		uniforms++;
 	}
 	if (cam_P_dirty) {
 		glUniformMatrix4fv (truck_P_loc, 1, GL_FALSE, P.m);
+		uniforms++;
 	}
 	for (i = 0; i < num_trucks; i++) {
 		mat4 truck_M, R, T, wheel_M;
 		vec3 rgt, up;
+		float dist;
+		
+		// don't draw trucks behind camera
+		if (is_forward_cam && (trucks[i].pos.v[2] > player_pos.v[2] + 2.0f)) {
+			//uniforms++;
+			continue;
+		} else if (!is_forward_cam && (trucks[i].pos.v[2] < player_pos.v[2] - 2.0f)) {
+			//uniforms++;
+			continue;
+		}
+		//
+		// don't draw trucks too far away
+		dist = length2 (trucks[i].pos - player_pos);
+		if (dist > MAX_TRAFFIC_DRAW_DIST * MAX_TRAFFIC_DRAW_DIST) {
+			continue;
+		}
 		
 		// truck chassis
 		glActiveTexture (GL_TEXTURE0);
@@ -272,7 +294,10 @@ bool draw_traffic () {
 		T = translate (identity_mat4 (), trucks[i].pos);
 		truck_M = T * R;
 		glUniformMatrix4fv (truck_M_loc, 1, GL_FALSE, truck_M.m);
+		uniforms++;
 		glDrawArrays (GL_TRIANGLES, 0, truck_point_count);
+		draws++;
+		verts += truck_point_count;
 		
 		// add 4 wheels
 		glActiveTexture (GL_TEXTURE0);
@@ -283,7 +308,10 @@ bool draw_traffic () {
 		// inherit rotation and translation of parent (the truck)
 		wheel_M = truck_M * wheel_M;
 		glUniformMatrix4fv (truck_M_loc, 1, GL_FALSE, wheel_M.m);
+		uniforms++;
 		glDrawArrays (GL_TRIANGLES, 0, truck_wheel_point_count);
+		draws++;
+		verts += truck_wheel_point_count;
 		
 		glBindVertexArray (truck_wheel_vao);
 		wheel_M = rotate_x_deg (identity_mat4 (), curr_wheel_rot);
@@ -291,7 +319,10 @@ bool draw_traffic () {
 		// inherit rotation and translation of parent (the truck)
 		wheel_M = truck_M * wheel_M;
 		glUniformMatrix4fv (truck_M_loc, 1, GL_FALSE, wheel_M.m);
+		uniforms++;
 		glDrawArrays (GL_TRIANGLES, 0, truck_wheel_point_count);
+		draws++;
+		verts += truck_wheel_point_count;
 		
 		glBindVertexArray (truck_wheel_vao);
 		wheel_M = rotate_x_deg (identity_mat4 (), curr_wheel_rot);
@@ -299,7 +330,10 @@ bool draw_traffic () {
 		// inherit rotation and translation of parent (the truck)
 		wheel_M = truck_M * wheel_M;
 		glUniformMatrix4fv (truck_M_loc, 1, GL_FALSE, wheel_M.m);
+		uniforms++;
 		glDrawArrays (GL_TRIANGLES, 0, truck_wheel_point_count);
+		draws++;
+		verts += truck_wheel_point_count;
 		
 		glBindVertexArray (truck_wheel_vao);
 		wheel_M = rotate_x_deg (identity_mat4 (), curr_wheel_rot);
@@ -307,7 +341,10 @@ bool draw_traffic () {
 		// inherit rotation and translation of parent (the truck)
 		wheel_M = truck_M * wheel_M;
 		glUniformMatrix4fv (truck_M_loc, 1, GL_FALSE, wheel_M.m);
+		uniforms++;
 		glDrawArrays (GL_TRIANGLES, 0, truck_wheel_point_count);
+		draws++;
+		verts += truck_wheel_point_count;
 	}
 	
 	return true;

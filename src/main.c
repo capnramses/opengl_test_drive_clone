@@ -20,6 +20,7 @@ bool dump_video;
 bool enable_blur = false;
 int blur_round;
 int time_text;
+int fps_text;
 
 int main (int argc, char** argv) {
 	double prev_time = 0.0;
@@ -92,6 +93,16 @@ int main (int argc, char** argv) {
 		0.0f,
 		0.8f
 	);
+	fps_text = add_text (
+		"hz:\ndraws:\nuniforms:\nverts:",
+		-1.0,
+		0.0f,
+		60.0f,
+		0.9f,
+		0.9f,
+		0.0f,
+		0.8f
+	);
 
 	glEnable (GL_DEPTH_TEST);
 	glDepthFunc (GL_LESS);
@@ -104,6 +115,7 @@ int main (int argc, char** argv) {
 	double video_dump_timer = 0.0; // timer for next frame grab
 	double frame_time = 1.0 / (double)g_video_fps; // 1/25 seconds of time
 	double time_since_text_up = 0.0;
+	double fps_timer = 0.0;
 	prev_time = glfwGetTime ();
 	while (!glfwWindowShouldClose (gl_window)) {
 		// work out how much time has passed
@@ -111,6 +123,9 @@ int main (int argc, char** argv) {
 		double elapsed = curr_time - prev_time;
 		prev_time = curr_time;
 		accum_sim_time += elapsed;
+		fps_timer += elapsed;
+		
+		draws = uniforms = verts = 0;
 		
 		if (dump_video) {
 			video_timer += elapsed;
@@ -161,6 +176,7 @@ int main (int argc, char** argv) {
 			
 			sprintf (tmp, "%02i:%02i:%02i", mins, secs, ms);
 			update_text (time_text, tmp);
+			
 			time_since_text_up = 0.0;
 		}
 		
@@ -205,7 +221,22 @@ int main (int argc, char** argv) {
 		if (GLFW_PRESS == glfwGetKey (gl_window, GLFW_KEY_ESCAPE)) {
 			glfwSetWindowShouldClose (gl_window, 1);
 		}
-
+		
+		frames++;
+		
+		if (fps_timer > 0.1) {
+			char tmp[32];
+			double hz = 0.0;
+			
+			hz = (double)frames / fps_timer;
+			sprintf (tmp, "hz %.2lf:\ndraws %i:\nuniforms %i:\nverts: %i",
+				hz, draws, uniforms, verts); 
+			update_text (fps_text, tmp);
+			
+			fps_timer = 0.0;
+			frames = 0;
+		}
+		
 		glfwPollEvents ();
 		glfwSwapBuffers (gl_window);
 	}

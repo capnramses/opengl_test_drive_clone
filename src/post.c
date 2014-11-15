@@ -93,6 +93,7 @@ bool init_post () {
 	glUseProgram (quad_sp);
 	glUniform1i (quad_tex0_loc, 0);
 	glUniform1i (quad_tex0_loc, 1);
+	uniforms += 2;
 	
 	// VBO for fullscreen quad
 	glGenBuffers (1, &vp_vbo);
@@ -116,4 +117,6 @@ void draw_blur () {
 	}
 	glBindVertexArray (quad_vao);
 	glDrawArrays (GL_TRIANGLES, 0, 6);
+	draws++;
+	verts += 6;
 }

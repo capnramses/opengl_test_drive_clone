@@ -11,6 +11,8 @@ player x)
 also immune for 2s after that to prevent insta-death
 * smashed windscreen when crashed
 * bigger dash
+* check if truck/terrain is behind camera if so dont draw
+* check if truck/terrain is too far ahead if so dont draw
 
 13 Nov 2014
 * added gamepad/joystick detection and controls for xbox 360 controller

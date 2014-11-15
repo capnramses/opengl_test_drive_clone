@@ -190,6 +190,7 @@ bool init_dash () {
 	dash_h_loc = glGetUniformLocation (dash_sp, "h");
 	glUseProgram (dash_sp);
 	glUniformMatrix4fv (dash_V_loc, 1, GL_FALSE, dash_V.m);
+	uniforms++;
 	
 	mirror_sp = link_programme_from_files (MIRROR_VS, MIRROR_FS);
 	mirror_P_loc = glGetUniformLocation (mirror_sp, "P");
@@ -197,6 +198,7 @@ bool init_dash () {
 	mirror_M_loc = glGetUniformLocation (mirror_sp, "M");
 	glUseProgram (mirror_sp);
 	glUniformMatrix4fv (mirror_V_loc, 1, GL_FALSE, dash_V.m);
+	uniforms++;
 	
 	mirror_outer_sp = link_programme_from_files (
 		MIRROR_OUTER_VS, MIRROR_OUTER_FS);
@@ -205,6 +207,7 @@ bool init_dash () {
 	mirror_outer_M_loc = glGetUniformLocation (mirror_outer_sp, "M");
 	glUseProgram (mirror_outer_sp);
 	glUniformMatrix4fv (mirror_outer_V_loc, 1, GL_FALSE, dash_V.m);
+	uniforms++;
 	
 	steering_sp = link_programme_from_files (STEERING_VS, STEERING_FS);
 	steering_P_loc = glGetUniformLocation (steering_sp, "P");
@@ -214,6 +217,7 @@ bool init_dash () {
 	steering_h_loc = glGetUniformLocation (steering_sp, "h");
 	glUseProgram (steering_sp);
 	glUniformMatrix4fv (steering_V_loc, 1, GL_FALSE, dash_V.m);
+	uniforms++;
 	
 	smashed_sp = link_programme_from_files (SMASHED_VS, SMASHED_FS);
 	
@@ -254,6 +258,8 @@ void draw_dash () {
 		glActiveTexture (GL_TEXTURE0);
 		glBindTexture (GL_TEXTURE_2D, smashed_diff_map);
 		glDrawArrays (GL_TRIANGLE_STRIP, 0, 4);
+		draws++;
+		verts += 4;
 		glDepthMask (GL_TRUE);
 		glEnable (GL_DEPTH_TEST);
 	}
@@ -267,11 +273,15 @@ void draw_dash () {
 		glUniformMatrix4fv (dash_P_loc, 1, GL_FALSE, P_boring.m);
 		glUniform1f (dash_h_loc, (float)gl_height);
 		glUniform1f (dash_w_loc, (float)gl_width);
+		uniforms += 3;
 	}
 	
 	glUniformMatrix4fv (dash_M_loc, 1, GL_FALSE, dash_M.m);
+	uniforms++;
 	glBindVertexArray (dash_vao);
 	glDrawArrays (GL_TRIANGLES, 0, dash_point_count);
+	draws++;
+	verts += dash_point_count;
 	
 	glUseProgram (steering_sp);
 	//if (cam_V_dirty) {
@@ -283,6 +293,7 @@ void draw_dash () {
 		glUniformMatrix4fv (steering_P_loc, 1, GL_FALSE, P_boring.m);
 		glUniform1f (steering_h_loc, (float)gl_height);
 		glUniform1f (steering_w_loc, (float)gl_width);
+		uniforms += 3;
 	}
 	
 	//
@@ -290,8 +301,11 @@ void draw_dash () {
 	glActiveTexture (GL_TEXTURE0);
 	glBindTexture (GL_TEXTURE_2D, steering_diff_map);
 	glUniformMatrix4fv (steering_M_loc, 1, GL_FALSE, steering_M.m);
+	uniforms++;
 	glBindVertexArray (steering_vao);
 	glDrawArrays (GL_TRIANGLES, 0, steering_point_count);
+	draws++;
+	verts += steering_point_count;
 	
 	//
 	// mirror
@@ -304,10 +318,14 @@ void draw_dash () {
 	//}
 	if (cam_P_dirty) {
 		glUniformMatrix4fv (mirror_outer_P_loc, 1, GL_FALSE, P_boring.m);
+		uniforms++;
 	}
 	glUniformMatrix4fv (mirror_outer_M_loc, 1, GL_FALSE, mirror_outer_M.m);
+	uniforms++;
 	glBindVertexArray (mirror_vao);
 	glDrawArrays (GL_TRIANGLES, 0, mirror_point_count);
+	draws++;
+	verts += mirror_point_count;
 	
 	glUseProgram (mirror_sp);
 	//if (cam_V_dirty) {
@@ -315,10 +333,13 @@ void draw_dash () {
 	//}
 	if (cam_P_dirty) {
 		glUniformMatrix4fv (mirror_P_loc, 1, GL_FALSE, P_boring.m);
+		uniforms++;
 	}
 	
 	glUniformMatrix4fv (mirror_M_loc, 1, GL_FALSE, mirror_M.m);
+	uniforms++;
 	glBindVertexArray (mirror_vao);
 	glDrawArrays (GL_TRIANGLES, 0, mirror_point_count);
-
+	draws++;
+	verts += mirror_point_count;
 }

@@ -12,6 +12,7 @@
 //
 
 #include "text.h"
+#include "gl_utils.h"
 #include "stb_image.h" // Sean Barrett's image loader
 #include <stdio.h>
 #include <string.h>
@@ -418,7 +419,10 @@ void draw_texts () {
 			renderable_texts[i].g,
 			renderable_texts[i].b,
 			renderable_texts[i].a);
+		uniforms++;
 		glDrawArrays (GL_TRIANGLES, 0, renderable_texts[i].point_count);
+		draws++;
+		verts += renderable_texts[i].point_count;
 	}
 	
 	glEnable (GL_DEPTH_TEST);

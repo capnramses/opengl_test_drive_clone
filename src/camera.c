@@ -84,7 +84,6 @@ void init_cam () {
 	// redirect fragment shader output 0 used to the texture that we just bound
 	GLenum draw_bufs[] = { GL_COLOR_ATTACHMENT0 };
 	glDrawBuffers (1, draw_bufs);
-	
 	// check for completeness
 	assert (verify_bound_framebuffer ());
 

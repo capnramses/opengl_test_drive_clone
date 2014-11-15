@@ -12,8 +12,3 @@
 (every x seconds build a 3-frame buffer of headlights and discard rest)
 * tachometer etc.
 * hanging thing on mirror
-
-=Optimisation=
-* fps and counts
-* remove behind
-* frustum

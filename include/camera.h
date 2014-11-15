@@ -21,6 +21,7 @@ extern mat4 P;
 extern mat4 V;
 extern bool cam_P_dirty;
 extern bool cam_V_dirty;
+extern bool is_forward_cam;
 // texture used for rear-vision mirror. i will render a rear view to this
 extern GLuint cam_mirror_tex;
 

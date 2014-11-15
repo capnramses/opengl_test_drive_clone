@@ -1,7 +1,6 @@
 #include "player.h"
 #include "camera.h"
 #include "gl_utils.h"
-#include "maths_funcs.h"
 #include "dash.h"
 #include "audio.h"
 #include "traffic.h"
@@ -33,6 +32,10 @@ bool was_key_down[1024];
 bool was_button_down[64];
 bool det_joystick;
 float friction = 0.01f;
+
+vec3 get_player_pos () {
+	return curr_pos;
+}
 
 //
 // win detection based on z dist

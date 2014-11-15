@@ -15,6 +15,11 @@ int gl_height;
 GLFWwindow* gl_window;
 bool full_screen;
 
+int draws;
+int uniforms;
+int verts;
+int frames;
+
 int myargc;
 char** myargv;
 

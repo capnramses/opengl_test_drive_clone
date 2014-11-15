@@ -33,4 +33,9 @@ extern char** myargv;
 extern int g_video_fps;
 extern int g_video_seconds_total;
 
+extern int draws;
+extern int uniforms;
+extern int verts;
+extern int frames;
+
 #endif

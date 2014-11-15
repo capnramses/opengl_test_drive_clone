@@ -2,6 +2,7 @@
 #include "gl_utils.h"
 #include "camera.h"
 #include "traffic.h"
+#include "player.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -12,6 +13,7 @@
 #define RCLIFF_VS "shaders/rcliff.vert"
 #define RCLIFF_FS "shaders/rcliff.frag"
 #define ROADS_PER_LEVEL 20
+#define MAX_TERRAIN_DRAW_DIST 20.0
 
 // VAOs pointing to generated mesh data
 GLuint road_vaos[ROADS_PER_LEVEL], rcliff_vaos[ROADS_PER_LEVEL],
@@ -336,37 +338,70 @@ Road segment created in buffer like this (birds-eye view of road):
 
 void draw_terrain () {
 	int i;
+	vec3 player_pos;
 
+	player_pos = get_player_pos ();
 	glActiveTexture (GL_TEXTURE0);
 	glBindTexture (GL_TEXTURE_2D, road_tex);
 	
 	for (i = 0; i < ROADS_PER_LEVEL; i++) {
+		float tz, dist;
+		
+		// don't draw behind camera
+		tz = (float)i * -4.0f * 10.0f;
+		if (is_forward_cam) {
+			if (tz > player_pos.v[2] + 40.0f) {
+				continue;
+			}
+			if (tz < player_pos.v[2] - 120.0f) {
+				continue;
+			}
+		} else {
+			if (tz < player_pos.v[2] - 40.0f) {
+				continue;
+			}
+			if (tz > player_pos.v[2] + 80.0f) {
+				continue;
+			}
+		}
+	
+	
 		glUseProgram (road_sp);
 		if (cam_V_dirty) {
 			glUniformMatrix4fv (road_V_loc, 1, GL_FALSE, V.m);
+			uniforms++;
 		}
 		if (cam_P_dirty) {
 			glUniformMatrix4fv (road_P_loc, 1, GL_FALSE, P.m);
+			uniforms++;
 		}
 	
 		glBindVertexArray (road_vaos[i]);
 		glDrawArrays (GL_TRIANGLES, 0, road_point_count);
+		draws++;
+		verts += road_point_count;
 	
 		glUseProgram (rcliff_sp);
 		if (cam_V_dirty) {
 			glUniformMatrix4fv (rcliff_V_loc, 1, GL_FALSE, V.m);
+			uniforms++;
 		}
 		if (cam_P_dirty) {
 			glUniformMatrix4fv (rcliff_P_loc, 1, GL_FALSE, P.m);
 			glUniform1f (rcliff_h_loc, (float)gl_height);
 			glUniform1f (rcliff_w_loc, (float)gl_width);
+			uniforms += 3;
 		}
 	
 		glBindVertexArray (rcliff_vaos[i]);
 		glDrawArrays (GL_TRIANGLES, 0, rcliff_point_count);
+		draws++;
+		verts += rcliff_point_count;
 		
 		glBindVertexArray (lcliff_vaos[i]);
 		glDrawArrays (GL_TRIANGLES, 0, lcliff_point_count);
+		draws++;
+		verts += lcliff_point_count;
 	}
 }
 
