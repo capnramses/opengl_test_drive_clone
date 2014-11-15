@@ -26,6 +26,7 @@ bool verify_bound_framebuffer ();
 
 extern int gl_width;
 extern int gl_height;
+extern bool full_screen;
 extern GLFWwindow* gl_window;
 extern int myargc;
 extern char** myargv;

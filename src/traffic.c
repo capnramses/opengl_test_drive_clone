@@ -382,38 +382,46 @@ bool hit_wall (vec3 pos) {
 		
 		//printf ("ahead marker %i\nbehind marker %i\n", ahead_marker, behind_marker);
 	}
-	ahead_pos = left_lane_markers[ahead_marker] + vec3 (1.0f, 0.0f, 0.0f);
+	
+//	printf ("\n\n");
+	
+	// the 0.75 puts marker back in centre of road
+	ahead_pos = left_lane_markers[ahead_marker] + vec3 (0.75f, 0.0f, 0.0f);
 	if (behind_marker < 0) {
 		behind_pos = vec3 (0.0f, 0.0f, 0.0f);
 	} else {
-		behind_pos = left_lane_markers[ahead_marker - 1] + vec3 (1.0f, 0.0f, 0.0f);
+		behind_pos = left_lane_markers[ahead_marker - 1] +
+			vec3 (0.75f, 0.0f, 0.0f);
 	}
 	
 	{ // work out wall xpos at specific location
 		float xrange, zrange, xgrad, ourzfac, interpmarkerx;
-		float wall_leeway = 0.50f; // make cliff and edge a bit farther
-		float cliff_leeway = 1.0f;
+		float wall_leeway = 0.0f; // make cliff and edge a bit farther
+		float cliff_leeway = 0.0f;
+		float ztotalbtw = 4.0f;
 		
-		//print (behind_pos);
-		//print (ahead_pos);
+//		print (behind_pos);
+//		print (ahead_pos);
 	
 		xrange = ahead_pos.v[0] - behind_pos.v[0];
 		
 		zrange = fabs (ahead_pos.v[2] - behind_pos.v[2]);
 	
 		xgrad = xrange / zrange;
+//		printf ("xgrad = %f\n", xgrad);
 	
 		ourzfac = fabs (pos.v[2] - behind_pos.v[2]) / zrange;
-		//printf ("our zpos %.2f\nour zfac =%.2f\n", pos.v[2], ourzfac);
+//		printf ("our zpos %.2f\nour zfac =%.2f\n", pos.v[2], ourzfac);
 		
-		interpmarkerx = behind_pos.v[0] + xgrad * ourzfac;
+		interpmarkerx = behind_pos.v[0] + xgrad * ourzfac * ztotalbtw;
 		
-		wallx = interpmarkerx + 1.0f + wall_leeway;
-		edgex = interpmarkerx - (1.0f + cliff_leeway);
+//		printf ("interpx: %f\n", interpmarkerx);
+		wallx = interpmarkerx + 2.0f + wall_leeway;
+		edgex = interpmarkerx - (2.0f + cliff_leeway);
 		
-		//printf ("wallx %.2f\n edgex %.2f\n", wallx, edgex);
+//	printf (" wallx %.2f\n edgex %.2f\n", wallx, edgex);
 	}
-	//printf ("posx %.2f\n", pos.v[0]);
+//	printf ("==posx %.2f==\n", pos.v[0]);
 	if (pos.v[0] > wallx) {
 		printf ("HIT WALL on RHS\n");
 		return true;

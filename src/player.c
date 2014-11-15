@@ -36,7 +36,7 @@ float friction = 0.01f;
 // win detection based on z dist
 // returns true if finished
 bool finished_level () {
-	if (curr_pos.v[2] < -800.0f) {
+	if (curr_pos.v[2] < -792.0f) {
 		return true;
 	}
 	return false;
@@ -185,11 +185,13 @@ void update_player (double elapsed) {
 	// crash detection with other vehicles
 	if (hit_truck (curr_pos)) {
 		printf ("we hit a truck!\n");
+		play_crash_snd ();
 	}
 	//
 	// crash detection with terrain
 	if (hit_wall (curr_pos)) {
 		//printf ("we hit terrain!\n");
+		play_crash_snd ();
 	}
 }
 

@@ -24,11 +24,36 @@ int time_text;
 int main (int argc, char** argv) {
 	double prev_time = 0.0;
 	double accum_sim_time = 0.0;
+	int param = -1;
 
 	myargc = argc;
 	myargv = argv;
+	gl_width = 800;
+	gl_height = 800;
 
-	if (!start_gl (800, 800)) {
+	param = M_CheckParm ("-help");
+	if (param > 0) {
+		printf ("ANTON'S TEST DRIVE REMAKE. PARAMS:\n"
+			"-help\t\t\tthis\n"
+			"-res WIDTH HEIGHT\tset viewport resolution\n"
+			"-fs\t\t\tfull-scren\n"
+			"-vidrec\t\t\trecord a video\n"
+		);
+		return 0;
+	}
+	param = M_CheckParm ("-res");
+	if (param > 0) {
+		gl_width = atoi (argv[param + 1]);
+		gl_height = atoi (argv[param + 2]);
+		printf ("===resoltion set to %iX%i===\n", gl_width, gl_height);
+	}
+	param = M_CheckParm ("-fs");
+	if (param > 0) {
+		printf ("===display set to full-screen===\n", gl_width, gl_height);
+		full_screen = true;
+	}
+
+	if (!start_gl (gl_width, gl_height)) {
 		fprintf (stderr, "ERROR: could not start opengl\n");
 		return 1;
 	}
@@ -59,12 +84,12 @@ int main (int argc, char** argv) {
 	));
 	time_text = add_text (
 		"00:00:00",
-		-0.21f,
+		-200.0f / (float)gl_width,
 		1.0f,
 		110.0f,
-		0.7f,
-		0.7f,
-		0.7f,
+		0.9f,
+		0.9f,
+		0.0f,
 		0.8f
 	);
 

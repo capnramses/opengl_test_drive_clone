@@ -3,7 +3,7 @@
 #include <assert.h>
 
 irrklang::ISoundEngine* audio;
-irrklang::ISound* engine_snd;
+irrklang::ISound* engine_snd, *crash_snd;
 
 bool init_audio () {
 	printf ("init audio...\n");
@@ -22,6 +22,19 @@ bool init_audio () {
 	engine_snd->setVolume (0.25f);
 	//audio->play2D("audio/noufos.ogg", true, false, false);
 
+	return true;
+}
+
+bool play_crash_snd () {
+	// only play if not already playing
+	if (audio->isCurrentlyPlaying ("audio/crash.ogg")) {
+		return true;
+	}
+	crash_snd = audio->play2D("audio/crash.ogg", false, false, true);
+	if (!crash_snd) {
+		fprintf (stderr, "ERROR: playing crash sound\n");
+		return false;
+	}
 	return true;
 }
 

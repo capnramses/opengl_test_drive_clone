@@ -13,6 +13,7 @@
 int gl_width;
 int gl_height;
 GLFWwindow* gl_window;
+bool full_screen;
 
 int myargc;
 char** myargv;
@@ -33,6 +34,7 @@ void window_resize_callback (GLFWwindow* window, int width, int height);
 bool start_gl (int width, int height) {
 	const GLubyte* renderer;
 	const GLubyte* version;
+	GLFWmonitor* mon = NULL;
 	
 	printf ("Init OpenGL...\n");
 	
@@ -53,8 +55,19 @@ bool start_gl (int width, int height) {
 
 	glfwWindowHint (GLFW_SAMPLES, msaa_samples);
 
-	gl_window = glfwCreateWindow (gl_width, gl_height, "OpenGL Test Drive Clone",
-		NULL, NULL);
+	
+	
+	if (full_screen) {
+		const GLFWvidmode* v = NULL;
+		
+		mon = glfwGetPrimaryMonitor ();
+		v = glfwGetVideoMode (mon);
+		gl_width = v->width;
+		gl_height = v->height;
+	}
+	gl_window = glfwCreateWindow (gl_width, gl_height,
+		"OpenGL Test Drive Remake", mon, NULL);
+
 	if (!gl_window) {
 		fprintf (stderr, "ERROR: opening OS window\n");
 		return false;
