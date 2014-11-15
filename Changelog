@@ -1,3 +1,11 @@
+15 nov 2014
+* collision detection with trucks (check all based on distance)
+* collision detection with terrain (gets start and end pos of current segment,
+and interpolates based on player pos along this. works out wall and cliff drop
+x as x = start_pos + gradient * factor +- 1.0 for each side. then checks vs
+player x)
+* finish level check (is player z < -800)
+
 13 Nov 2014
 * added gamepad/joystick detection and controls for xbox 360 controller
 

@@ -106,14 +106,34 @@ int main (int argc, char** argv) {
 			update_traffic (TIME_STEP_SIZE);
 		}
 		
+		if (finished_level ()) {
+				char tmp[32];
+				int mins, secs, ms;
+				double dms;
+				
+				mins = (int)(curr_time / 60.0);
+				secs = (int)(curr_time - (double)mins * 60.0);
+				dms = curr_time - (double)mins * 60.0 - (double)secs;
+				ms = (int)(dms * 100.0);
+				
+				sprintf (tmp, "%02i:%02i:%02i", mins, secs, ms); 
+				printf ("Finished Level! Time: %s\n", tmp);
+				
+				break;
+			}
+		
 		// don't update too often that it slows us down
 		time_since_text_up += elapsed;
 		if (time_since_text_up >= 0.05) {
-			int mins = (int)(curr_time / 60.0);
-			int secs = (int)(curr_time - (double)mins * 60.0);
-			double dms = curr_time - (double)mins * 60.0 - (double)secs;
-			int ms = (int)(dms * 100.0);
+			int mins, secs, ms;
+			double dms;
 			char tmp[32];
+			
+			mins = (int)(curr_time / 60.0);
+			secs = (int)(curr_time - (double)mins * 60.0);
+			dms = curr_time - (double)mins * 60.0 - (double)secs;
+			ms = (int)(dms * 100.0);
+			
 			sprintf (tmp, "%02i:%02i:%02i", mins, secs, ms);
 			update_text (time_text, tmp);
 			time_since_text_up = 0.0;

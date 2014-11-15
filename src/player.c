@@ -4,6 +4,8 @@
 #include "maths_funcs.h"
 #include "dash.h"
 #include "audio.h"
+#include "traffic.h"
+#include "terrain.h"
 
 /* TODO
 
@@ -30,6 +32,15 @@ bool was_button_down[64];
 bool det_joystick;
 float friction = 0.01f;
 
+//
+// win detection based on z dist
+// returns true if finished
+bool finished_level () {
+	if (curr_pos.v[2] < -800.0f) {
+		return true;
+	}
+	return false;
+}
 
 void update_player (double elapsed) {
 	float wheel_turn = 0.0f;
@@ -41,7 +52,7 @@ void update_player (double elapsed) {
 		float brake_factor = 0.0f;
 		float turn_factor = 0.0f;
 		int count = 0;
-		int i;
+		//int i;
 		
 		axis_values = glfwGetJoystickAxes (GLFW_JOYSTICK_1, &count);
 		//for (i = 0; i < count; i++) {
@@ -169,5 +180,16 @@ void update_player (double elapsed) {
 	float fovfac =  fabs(curr_speed) / 30.0f;
 	float fovnew = 67.0f + fovrange * fovfac;
 	set_fovy (fovnew);
+	
+	//
+	// crash detection with other vehicles
+	if (hit_truck (curr_pos)) {
+		printf ("we hit a truck!\n");
+	}
+	//
+	// crash detection with terrain
+	if (hit_wall (curr_pos)) {
+		//printf ("we hit terrain!\n");
+	}
 }
 

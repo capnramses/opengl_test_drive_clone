@@ -369,3 +369,4 @@ void draw_terrain () {
 		glDrawArrays (GL_TRIANGLES, 0, lcliff_point_count);
 	}
 }
+

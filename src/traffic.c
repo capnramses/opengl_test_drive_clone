@@ -326,3 +326,103 @@ bool add_right_lane_marker (vec3 pos) {
 	num_right_lane_markers++;
 	return true;
 }
+
+//
+// check if given position is too close to a truck
+// returns true if too close
+bool hit_truck (vec3 pos) {
+	float too_close = 1.0f;
+	int i;
+	
+	for (i = 0; i < num_trucks; i++) {
+		vec3 truck_pos;
+		float distsq;
+		
+		truck_pos = trucks[i].pos;
+		// get squared distance to avoid expensive sqrt calculation
+		distsq = length2 (truck_pos - pos);
+		if (distsq < too_close * too_close) {
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+//
+// detect collision with wall on RHS
+// uses traffic lane markers to do so
+// return true if crashed
+bool hit_wall (vec3 pos) {
+	vec3 ahead_pos, behind_pos;
+	float wallx = 0.0f;
+	float edgex = 0.0f;
+	int ahead_marker, behind_marker;
+	
+	ahead_marker = 0;
+	behind_marker = -1;
+	
+	{ // get road marker pos ahead and behind car
+		float closest_distsq = 100000.0f;
+		int i;
+		
+		for (i = 0; i < num_left_lane_markers; i++) {
+			// only looking for marker AHEAD of current pos
+			if (left_lane_markers[i].v[2] <= pos.v[2]) {
+				float distsq;
+				
+				distsq = length2 (left_lane_markers[i] - pos);
+				if (distsq < closest_distsq) {
+					closest_distsq = distsq;
+					ahead_marker = i;
+				}
+			}
+		} // endfor
+		behind_marker = ahead_marker - 1;
+		
+		//printf ("ahead marker %i\nbehind marker %i\n", ahead_marker, behind_marker);
+	}
+	ahead_pos = left_lane_markers[ahead_marker] + vec3 (1.0f, 0.0f, 0.0f);
+	if (behind_marker < 0) {
+		behind_pos = vec3 (0.0f, 0.0f, 0.0f);
+	} else {
+		behind_pos = left_lane_markers[ahead_marker - 1] + vec3 (1.0f, 0.0f, 0.0f);
+	}
+	
+	{ // work out wall xpos at specific location
+		float xrange, zrange, xgrad, ourzfac, interpmarkerx;
+		float wall_leeway = 0.50f; // make cliff and edge a bit farther
+		float cliff_leeway = 1.0f;
+		
+		//print (behind_pos);
+		//print (ahead_pos);
+	
+		xrange = ahead_pos.v[0] - behind_pos.v[0];
+		
+		zrange = fabs (ahead_pos.v[2] - behind_pos.v[2]);
+	
+		xgrad = xrange / zrange;
+	
+		ourzfac = fabs (pos.v[2] - behind_pos.v[2]) / zrange;
+		//printf ("our zpos %.2f\nour zfac =%.2f\n", pos.v[2], ourzfac);
+		
+		interpmarkerx = behind_pos.v[0] + xgrad * ourzfac;
+		
+		wallx = interpmarkerx + 1.0f + wall_leeway;
+		edgex = interpmarkerx - (1.0f + cliff_leeway);
+		
+		//printf ("wallx %.2f\n edgex %.2f\n", wallx, edgex);
+	}
+	//printf ("posx %.2f\n", pos.v[0]);
+	if (pos.v[0] > wallx) {
+		printf ("HIT WALL on RHS\n");
+		return true;
+	}
+	if (pos.v[0] < edgex) {
+		printf ("FELL OFF CLIFF on LHS\n");
+		return true;
+	}
+	
+	return false;
+}
+
