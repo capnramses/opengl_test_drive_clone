@@ -19,7 +19,8 @@ OBJS = \
 	obj/stb_image_write.o \
 	obj/traffic.o \
 	obj/audio.o \
-	obj/text.o
+	obj/text.o \
+	obj/lambo.o
 
 .PHONY : all
 all : binary

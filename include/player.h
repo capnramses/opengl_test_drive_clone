@@ -3,6 +3,7 @@
 
 #include "maths_funcs.h"
 
+bool init_player ();
 void update_player (double elapsed);
 bool finished_level ();
 vec3 get_player_pos ();

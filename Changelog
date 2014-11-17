@@ -1,5 +1,9 @@
+
 17 nove 2014
 * fixed bug - msaa called in wrong place was causing grainy crap on poly edges
+* added lamo countach stats for gears/engine etc.
+* created update_motor() drive-train simulation
+* added kph and rpm and gear text display (temporary)
 
 15 nov 2014
 * collision detection with trucks (check all based on distance)

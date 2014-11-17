@@ -100,6 +100,7 @@ int main (int argc, char** argv) {
 		0.0f,
 		0.8f
 	);
+	init_player ();
 
 	glEnable (GL_DEPTH_TEST);
 	glDepthFunc (GL_LESS);
