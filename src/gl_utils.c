@@ -30,6 +30,7 @@ int g_video_fps = 30;
 
 // built-in anti-aliasing to smooth jagged diagonal edges of polygons
 int msaa_samples = 16;
+// NOTE: if too high grainy crap appears on polygon edges
 
 void window_resize_callback (GLFWwindow* window, int width, int height);
 
@@ -58,10 +59,6 @@ bool start_gl (int width, int height) {
 	glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	glfwWindowHint (GLFW_SAMPLES, msaa_samples);
-
-	
-	
 	if (full_screen) {
 		const GLFWvidmode* v = NULL;
 		
@@ -82,6 +79,8 @@ bool start_gl (int width, int height) {
 	glfwSetWindowSizeCallback (gl_window, window_resize_callback);
 	// hide mouse
 	glfwSetInputMode (gl_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+
+	glfwWindowHint (GLFW_SAMPLES, msaa_samples);
 
 	glewExperimental = GL_TRUE;
 	glewInit ();

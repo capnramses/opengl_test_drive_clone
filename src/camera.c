@@ -119,13 +119,19 @@ void switch_to_rear_view () {
 	aspect = 2.5f / 1.0f;
 	P = perspective (35.0f, aspect, near, far);
 	cam_P_dirty = true;
+	glFlush ();
+	glFinish ();
 	glBindFramebuffer (GL_FRAMEBUFFER, cam_mirror_fb);
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, 0);
 }
 
 void switch_to_front_view () {
 	is_forward_cam = true;
 	move_cam (cam_pos);
 	recalc_perspective ();
+	glFlush ();
+	glFinish ();
 	glBindFramebuffer (GL_FRAMEBUFFER, 0);
 }
 

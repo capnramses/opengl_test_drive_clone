@@ -1,3 +1,6 @@
+17 nove 2014
+* fixed bug - msaa called in wrong place was causing grainy crap on poly edges
+
 15 nov 2014
 * collision detection with trucks (check all based on distance)
 * collision detection with terrain (gets start and end pos of current segment,

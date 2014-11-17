@@ -16,9 +16,6 @@
 #define TIME_STEP_SIZE 0.02 // 50 Hz
 
 bool dump_video;
-// motion blur effect
-bool enable_blur = false;
-int blur_round;
 int time_text;
 int fps_text;
 
