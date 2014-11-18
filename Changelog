@@ -1,4 +1,7 @@
 
+18 nov 2014
+* upgraded gamepad controls for new motor sim
+
 17 nove 2014
 * fixed bug - msaa called in wrong place was causing grainy crap on poly edges
 * added lamo countach stats for gears/engine etc.

@@ -81,7 +81,6 @@ void update_player (double elapsed) {
 	if (det_joystick) {
 		const float* axis_values = NULL;
 		const unsigned char* buttons = NULL;
-		float pedal_factor = 0.0f;
 		float brake_factor = 0.0f;
 		float turn_factor = 0.0f;
 		int count = 0;
@@ -122,7 +121,7 @@ void update_player (double elapsed) {
 		
 		// accel
 		// axis[5] -1 = full pedal down, 1 = released
-		pedal_factor = axis_values[5] * -0.5f + 0.5f;
+		throttle_fac = axis_values[5] * -0.5f + 0.5f;
 		brake_factor = axis_values[2] * 0.5f + 0.5f;
 		//printf ("bf %f\n", brake_factor);
 		curr_speed -= brake_power * brake_factor * (float)elapsed;
