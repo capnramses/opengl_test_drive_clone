@@ -21,23 +21,28 @@
 #define STEERING_FS "shaders/steering.frag"
 #define SMASHED_VS "shaders/smashed.vert"
 #define SMASHED_FS "shaders/smashed.frag"
+#define TACHO_VS "shaders/tacho.vert"
+#define TACHO_FS "shaders/tacho.frag"
 #define STEERING_DIFF "textures/steering.png"
 #define SMASHED_DIFF "textures/smashed.png"
+#define TACHO_FULL_DIFF "textures/tacho_full.png"
+#define TACHO_EMPTY_DIFF "textures/tacho_empty.png"
 
 GLuint dash_vao, mirror_vao, steering_vao;
 int dash_point_count, mirror_point_count, steering_point_count;
 
-GLuint dash_sp, mirror_sp, mirror_outer_sp, steering_sp, smashed_sp;
-GLint dash_M_loc, dash_V_loc, dash_P_loc;
-GLint dash_w_loc, dash_h_loc;
+GLuint dash_sp, mirror_sp, mirror_outer_sp, steering_sp, smashed_sp, tacho_sp;
+GLint dash_M_loc, dash_V_loc, dash_P_loc, dash_w_loc, dash_h_loc;
 GLint mirror_M_loc, mirror_V_loc,  mirror_P_loc;
 GLint mirror_outer_M_loc, mirror_outer_V_loc,  mirror_outer_P_loc;
-GLint steering_M_loc, steering_V_loc, steering_P_loc;
-GLint steering_w_loc, steering_h_loc;
-GLuint steering_diff_map, smashed_diff_map;
+GLint steering_M_loc, steering_V_loc, steering_P_loc, steering_w_loc,
+	steering_h_loc;
+GLint tacho_M_loc, tacho_V_loc, tacho_P_loc, tacho_rpm_fac_loc;
+GLuint steering_diff_map, smashed_diff_map, tacho_full_diff_map,
+	tacho_empty_diff_map;
 float steering_deg;
 
-mat4 dash_M, mirror_M, mirror_outer_M, steering_M, dash_V, P_boring;
+mat4 dash_M, tacho_M, mirror_M, mirror_outer_M, steering_M, dash_V, P_boring;
 vec3 dash_pos;
 
 bool draw_smashed;
@@ -51,6 +56,7 @@ bool init_dash () {
 	printf ("Init dashboard...\n");
 	
 	dash_M = identity_mat4 ();
+	tacho_M = identity_mat4 ();
 	mirror_M = identity_mat4 ();
 	mirror_outer_M = identity_mat4 ();
 	steering_M = identity_mat4 ();
@@ -221,12 +227,24 @@ bool init_dash () {
 	
 	smashed_sp = link_programme_from_files (SMASHED_VS, SMASHED_FS);
 	
+	tacho_sp = link_programme_from_files (TACHO_VS, TACHO_FS);
+	tacho_P_loc = glGetUniformLocation (tacho_sp, "P");
+	tacho_V_loc = glGetUniformLocation (tacho_sp, "V");
+	tacho_M_loc = glGetUniformLocation (tacho_sp, "M");
+	tacho_rpm_fac_loc = glGetUniformLocation (tacho_sp, "rpm_fac");
+	glUseProgram (tacho_sp);
+	glUniformMatrix4fv (tacho_V_loc, 1, GL_FALSE, dash_V.m);
+	uniforms++;
+	
 	// textures
 	steering_diff_map = create_texture_from_file (STEERING_DIFF);
 	smashed_diff_map = create_texture_from_file (SMASHED_DIFF);
+	tacho_full_diff_map = create_texture_from_file (TACHO_FULL_DIFF);
+	tacho_empty_diff_map = create_texture_from_file (TACHO_EMPTY_DIFF);
 	
 	dash_M = translate (identity_mat4 (), vec3 (0.0f, 0.0f, -1.125f));
-	
+	tacho_M = scale (identity_mat4 (), vec3 (0.15f, 0.1f, 1.0f));
+	tacho_M = translate (tacho_M, vec3 (-0.6f, -0.4f, -1.125f));
 	mirror_M = scale (identity_mat4 (), vec3 (0.4f, 0.4f, 0.4f));
 	mirror_M = translate (mirror_M, vec3 (0.65f, 0.6f, -1.125f));
 	
@@ -234,6 +252,11 @@ bool init_dash () {
 	mirror_outer_M = translate (mirror_outer_M, vec3 (0.65f, 0.6f, -1.125f));
 	
 	return true;
+}
+
+void set_rpm_fac (float fac) {
+	glUseProgram (tacho_sp);
+	glUniform1f (tacho_rpm_fac_loc, fac);
 }
 
 void set_steering (float deg) {
@@ -264,9 +287,6 @@ void draw_dash () {
 		glEnable (GL_DEPTH_TEST);
 	}
 	glUseProgram (dash_sp);
-	//if (cam_V_dirty) {
-	//	glUniformMatrix4fv (dash_V_loc, 1, GL_FALSE, V.m);
-	//}
 	if (cam_P_dirty) {
 		P_boring = perspective (
 			67.0f, (float)gl_width / (float)gl_height, 0.1f, 200.0f);
@@ -283,13 +303,25 @@ void draw_dash () {
 	draws++;
 	verts += dash_point_count;
 	
-	glUseProgram (steering_sp);
-	//if (cam_V_dirty) {
-	//	glUniformMatrix4fv (steering_V_loc, 1, GL_FALSE, V.m);
-	//}
+	//
+	// tachometer
+	glUseProgram (tacho_sp);
 	if (cam_P_dirty) {
-		P_boring = perspective (
-			67.0f, (float)gl_width / (float)gl_height, 0.1f, 200.0f);
+		glUniformMatrix4fv (tacho_P_loc, 1, GL_FALSE, P_boring.m);
+		uniforms ++;
+	}
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, tacho_full_diff_map);
+	glActiveTexture (GL_TEXTURE1);
+	glBindTexture (GL_TEXTURE_2D, tacho_empty_diff_map);
+	glUniformMatrix4fv (tacho_M_loc, 1, GL_FALSE, tacho_M.m);
+	uniforms++;
+	glDrawArrays (GL_TRIANGLE_STRIP, 0, 4);
+	draws++;
+	verts += 4;
+	
+	glUseProgram (steering_sp);
+	if (cam_P_dirty) {
 		glUniformMatrix4fv (steering_P_loc, 1, GL_FALSE, P_boring.m);
 		glUniform1f (steering_h_loc, (float)gl_height);
 		glUniform1f (steering_w_loc, (float)gl_width);
@@ -313,9 +345,6 @@ void draw_dash () {
 	glBindTexture (GL_TEXTURE_2D, cam_mirror_tex);
 	// outside black bit of mirror
 	glUseProgram (mirror_outer_sp);
-	//if (cam_V_dirty) {
-	//	glUniformMatrix4fv (mirror_outer_V_loc, 1, GL_FALSE, V.m);
-	//}
 	if (cam_P_dirty) {
 		glUniformMatrix4fv (mirror_outer_P_loc, 1, GL_FALSE, P_boring.m);
 		uniforms++;
@@ -328,9 +357,6 @@ void draw_dash () {
 	verts += mirror_point_count;
 	
 	glUseProgram (mirror_sp);
-	//if (cam_V_dirty) {
-	//	glUniformMatrix4fv (mirror_V_loc, 1, GL_FALSE, V.m);
-	//}
 	if (cam_P_dirty) {
 		glUniformMatrix4fv (mirror_P_loc, 1, GL_FALSE, P_boring.m);
 		uniforms++;

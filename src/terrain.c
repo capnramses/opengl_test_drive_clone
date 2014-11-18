@@ -102,7 +102,24 @@ bool gen_terrain_block (vec3 start_left, int vao_index, vec3* end_left) {
 	glGenBuffers (1, &rcliff_vp_vbo);
 	glGenBuffers (1, &lcliff_vp_vbo);
 	
-	type = rand () % 3;
+	// decide if 3-seg straight of completely random
+	// i added this cos we needed more straights for speed bits
+	static int four_seg_counter = 0;
+	static bool straight = false;
+	if (four_seg_counter % 4 == 0) {
+		if ((rand () % 2) == 1) {
+			straight = true;
+		} else {
+			straight = false;
+		}
+	}
+	if (straight) {
+		type = 0;
+	} else {
+		type = rand () % 3;
+	}
+	four_seg_counter++;
+	
 	printf ("block type %i gend\n", type);
 	
 	vps_sz = num_terrain_segs * 6 * 3 * sizeof (float);
@@ -345,7 +362,7 @@ void draw_terrain () {
 	glBindTexture (GL_TEXTURE_2D, road_tex);
 	
 	for (i = 0; i < ROADS_PER_LEVEL; i++) {
-		float tz, dist;
+		float tz;
 		
 		// don't draw behind camera
 		tz = (float)i * -4.0f * 10.0f;

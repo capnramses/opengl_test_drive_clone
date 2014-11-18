@@ -11,10 +11,11 @@
 // comment this line out for testing w/o crash detection
 #define CRASHES
 
+float top_speed_reached = 0.0f;
 float curr_heading = 0.0f;
 vec3 curr_pos = vec3 (1.0f, 0.5f, 0.0f);
 float curr_speed = 0.0f;
-float turn_speed = 50.0f;
+float turn_speed = 60.0f;
 double crash_count_down;
 double immune_count_down;
 // check if a key is still held down
@@ -25,6 +26,7 @@ float friction = 0.01f;
 float brake_power = 30.0f;
 
 int kph_text = -1;
+int crash_count;
 
 vec3 get_player_pos () {
 	return curr_pos;
@@ -45,8 +47,8 @@ bool finished_level () {
 bool init_player () {
 	kph_text = add_text (
 		"0 RPM      0 KPH",
-		-700.0f / (float)gl_width,
-		-1.0f + 400.0f / (float)gl_height,
+		-50.0f / (float)gl_width,
+		-1.0f + 600.0f / (float)gl_height,
 		110.0f,
 		0.9f,
 		0.9f,
@@ -101,7 +103,7 @@ void update_player (double elapsed) {
 		if (buttons[5]) {
 			if (!was_button_down[5]) {
 				if (ch_gear_up ()) {
-					printf ("changed gear to %i\n", curr_gear);
+					//printf ("changed gear to %i\n", curr_gear);
 				}
 				was_button_down[5] = true;
 			}
@@ -111,7 +113,7 @@ void update_player (double elapsed) {
 		if (buttons[4]) {
 			if (!was_button_down[4]) {
 				if (ch_gear_down ()) {
-					printf ("changed gear to %i\n", curr_gear);
+					//printf ("changed gear to %i\n", curr_gear);
 				}
 				was_button_down[4] = true;
 			}
@@ -141,20 +143,20 @@ void update_player (double elapsed) {
 	// W and S are accelerate and brake
 	// A and D are the steering wheel
 	// Q E are gear up/down
-	if (GLFW_PRESS == glfwGetKey (gl_window, 'W')) {
+	if (GLFW_PRESS == glfwGetKey (gl_window, GLFW_KEY_UP)) {
 		throttle_fac = 1.0f;
 	}
-	if (GLFW_PRESS == glfwGetKey (gl_window, 'S')) {
+	if (GLFW_PRESS == glfwGetKey (gl_window, GLFW_KEY_DOWN)) {
 		curr_speed -= brake_power * (float)elapsed;
 		if (curr_speed < 0.0f) {
 			curr_speed = 0.0f;
 		}
 	}
 	if (curr_speed > 1.0f) {
-		if (GLFW_PRESS == glfwGetKey (gl_window, 'A')) {
+		if (GLFW_PRESS == glfwGetKey (gl_window, GLFW_KEY_LEFT)) {
 			curr_heading += turn_speed * (float)elapsed;
 			wheel_turn += turn_speed * (float)elapsed;
-		} else if (GLFW_PRESS == glfwGetKey (gl_window, 'D')) {
+		} else if (GLFW_PRESS == glfwGetKey (gl_window, GLFW_KEY_RIGHT)) {
 			curr_heading -= turn_speed * (float)elapsed;
 			wheel_turn -= turn_speed * (float)elapsed;
 		// when user lets go of steering controls it centres
@@ -163,15 +165,15 @@ void update_player (double elapsed) {
 	if (GLFW_PRESS == glfwGetKey (gl_window, 'Q')) {
 		if (!was_key_down[(int)'Q']) {
 			if (ch_gear_up ()) {
-				printf ("changed gear to %i\n", curr_gear);
+				//printf ("changed gear to %i\n", curr_gear);
 			}
 			was_key_down[(int)'Q'] = true;
 		}
 	}
-	if (GLFW_PRESS == glfwGetKey (gl_window, 'E')) {
+	if (GLFW_PRESS == glfwGetKey (gl_window, 'A')) {
 		if (!was_key_down[(int)'E']) {
 			if (ch_gear_down ()) {
-				printf ("changed gear to %i\n", curr_gear);
+				//printf ("changed gear to %i\n", curr_gear);
 			}
 			was_key_down[(int)'E'] = true;
 		}
@@ -179,7 +181,7 @@ void update_player (double elapsed) {
 	if (GLFW_RELEASE == glfwGetKey (gl_window, 'Q')) {
 		was_key_down[(int)'Q'] = false;
 	}
-	if (GLFW_RELEASE == glfwGetKey (gl_window, 'E')) {
+	if (GLFW_RELEASE == glfwGetKey (gl_window, 'A')) {
 		was_key_down[(int)'E'] = false;
 	}
 	
@@ -191,12 +193,15 @@ void update_player (double elapsed) {
 	}
 	// modify because graphics are smaller than 1 unit per meter
 	float kph = curr_speed * (1.0f / 0.27f);
+	if (kph > top_speed_reached) {
+		top_speed_reached = kph;
+	}
 	
 	{
 		char tmp[128];
-		sprintf (tmp, "%i RPM   %i KPH   %i gear", (int)curr_motor_rpm,
-			(int)kph, curr_gear);
+		sprintf (tmp, "%i KPH   gear: %i ", (int)kph, curr_gear);
 		update_text (kph_text, tmp);
+		set_rpm_fac ((curr_motor_rpm) / (max_rpm));
 	}
 	
 	//printf ("kph %f accel %f\n", kph, accel);
@@ -208,7 +213,7 @@ void update_player (double elapsed) {
 	
 	// update position
 	// graphics fac
-	float gfx = 0.75f;
+	float gfx = 0.625f;
 	curr_pos = curr_pos + vec3 (velocity) * gfx;
 	
 	// update dashboard/car interior
@@ -216,10 +221,6 @@ void update_player (double elapsed) {
 	set_steering (wheel_turn * 50.0f);
 	
 	// update cam
-	/*vec3 targ = curr_pos + vec3 (
-		rotate_y_deg (identity_mat4 (), curr_heading) *
-		vec4 (0.0f, 0.0f, -1.0, 0.0f)
-	);*/
 	set_heading (curr_heading);
 	move_cam (curr_pos);
 	
@@ -228,7 +229,8 @@ void update_player (double elapsed) {
 	set_engine_speed (curr_motor_rpm * 0.002f + 0.002f);
 	// also change camera perspective as speed changes
 	float fovrange = 150.0f - 67.0f;
-	float fovfac =  fabs(curr_speed * gfx) / 60.0f;
+	//float kph = curr_speed * (1.0f / 0.27f);
+	float fovfac = kph / 300.0f; // just over 300kph
 	float fovnew = 67.0f + fovrange * fovfac;
 	set_fovy (fovnew);
 	
@@ -241,6 +243,7 @@ void update_player (double elapsed) {
 			play_crash_snd ();
 			crash_count_down = 3.0;
 			set_engine_speed (0.0f);
+			crash_count++;
 		}
 		//
 		// crash detection with terrain
@@ -249,6 +252,17 @@ void update_player (double elapsed) {
 			play_crash_snd ();
 			crash_count_down = 3.0;
 			set_engine_speed (0.0f);
+			crash_count++;
+		}
+		//
+		// rpm too high, blew engine
+		if (motor_blew) {
+			motor_blew = false;
+			printf ("blew motor!\n");
+			play_crash_snd ();
+			crash_count_down = 3.0;
+			set_engine_speed (0.0f);
+			crash_count++;
 		}
 	}
 #endif

@@ -9,6 +9,10 @@ bool set_gear (int no);
 
 extern float curr_motor_rpm;
 extern float throttle_fac;
+extern float min_rpm;
+extern float max_rpm;
+extern float bottom_rpm;
 extern int curr_gear;
+extern bool motor_blew;
 
 #endif

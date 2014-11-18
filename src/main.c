@@ -90,6 +90,7 @@ int main (int argc, char** argv) {
 		0.0f,
 		0.8f
 	);
+#ifdef DEBUG
 	fps_text = add_text (
 		"hz:\ndraws:\nuniforms:\nverts:",
 		-1.0,
@@ -100,6 +101,7 @@ int main (int argc, char** argv) {
 		0.0f,
 		0.8f
 	);
+#endif
 	init_player ();
 
 	glEnable (GL_DEPTH_TEST);
@@ -121,8 +123,9 @@ int main (int argc, char** argv) {
 		double elapsed = curr_time - prev_time;
 		prev_time = curr_time;
 		accum_sim_time += elapsed;
+#ifdef DEBUG
 		fps_timer += elapsed;
-		
+#endif
 		draws = uniforms = verts = 0;
 		
 		if (dump_video) {
@@ -156,6 +159,8 @@ int main (int argc, char** argv) {
 				
 				sprintf (tmp, "%02i:%02i:%02i", mins, secs, ms); 
 				printf ("Finished Level! Time: %s\n", tmp);
+				printf ("Top speed reached: %i kph\n", (int)top_speed_reached);
+				printf ("Crash count: %i\n", crash_count);
 				
 				break;
 			}
@@ -220,8 +225,8 @@ int main (int argc, char** argv) {
 			glfwSetWindowShouldClose (gl_window, 1);
 		}
 		
+#ifdef DEBUG
 		frames++;
-		
 		if (fps_timer > 0.1) {
 			char tmp[32];
 			double hz = 0.0;
@@ -234,6 +239,7 @@ int main (int argc, char** argv) {
 			fps_timer = 0.0;
 			frames = 0;
 		}
+#endif
 		
 		glfwPollEvents ();
 		glfwSwapBuffers (gl_window);

@@ -9,5 +9,7 @@ bool finished_level ();
 vec3 get_player_pos ();
 
 extern bool det_joystick;
+extern float top_speed_reached;
+extern int crash_count;
 
 #endif

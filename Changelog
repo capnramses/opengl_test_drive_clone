@@ -1,6 +1,14 @@
-
 18 nov 2014
 * upgraded gamepad controls for new motor sim
+* tachometer using multi-texturing
+* over-revving engine blows it = crash
+* fiddled with lambo specs to make it more fun to drive
+* sharper steering
+* faster trucks
+* changed controls for keyboard to cursor keys and q,a, to match original
+* improved fov rate of change for max 300kph
+* upgraded startup and all shaders to GLSL 4.2.0 and GL 4.2 for better texture
+binding
 
 17 nove 2014
 * fixed bug - msaa called in wrong place was causing grainy crap on poly edges

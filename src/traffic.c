@@ -30,7 +30,7 @@ GLint truck_M_loc, truck_V_loc, truck_P_loc;
 GLuint truck_diff_map, truck_wheel_diff_map;
 float wheel_rot_speed = 500.0f;
 float curr_wheel_rot = 0.0f;
-float truck_drive_speed = 3.5f;
+float truck_drive_speed = 7.0f;
 
 bool init_traffic () {
 	float* points = NULL;
@@ -127,33 +127,22 @@ bool init_traffic () {
 	truck_wheel_diff_map = create_texture_from_file (TRUCK_WHEEL_DIFF);
 	
 	add_truck_left_lane (0);
-	add_truck_left_lane (1);
-	add_truck_left_lane (2);
-	add_truck_left_lane (3);
 	add_truck_left_lane (5);
-	add_truck_left_lane (8);
 	add_truck_left_lane (13);
 	add_truck_left_lane (20);
-	add_truck_left_lane (30);
 	add_truck_left_lane (35);
 	add_truck_left_lane (50);
-	add_truck_left_lane (60);
 	add_truck_left_lane (90);
 	add_truck_left_lane (110);
 	
 	add_truck_right_lane (4);
 	add_truck_right_lane (8);
 	add_truck_right_lane (20);
-	add_truck_right_lane (25);
 	add_truck_right_lane (35);
-	add_truck_right_lane (48);
-	add_truck_right_lane (55);
-	add_truck_right_lane (60);
 	add_truck_right_lane (65);
 	add_truck_right_lane (67);
 	add_truck_right_lane (69);
 	add_truck_right_lane (70);
-	add_truck_right_lane (130);
 	add_truck_right_lane (150);
 	
 	return true;

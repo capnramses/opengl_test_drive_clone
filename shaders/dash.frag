@@ -1,4 +1,4 @@
-#version 410
+#version 420
 
 in vec2 st;
 in vec3 n_eye;

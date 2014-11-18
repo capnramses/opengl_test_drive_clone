@@ -17,11 +17,13 @@ vec2 data[4] = vec2[]
 	vec2 ( 1.0, -1.0)
 );
 
+uniform mat4 P, V, M;
+
 out vec2 st;
 
 void main () {
-	gl_Position = vec4 (data[gl_VertexID], 0.0, 1.0);
-	
-	st.s = gl_Position.x * 0.5 + 0.5;
-	st.t = gl_Position.y * 0.5 + 0.5;
+	vec4 vpos = vec4 (data[gl_VertexID], 0.0, 1.0);
+	st.s = vpos.x * 0.5 + 0.5;
+	st.t = vpos.y * 0.5 + 0.5;
+	gl_Position = P * V * M * vpos;
 }

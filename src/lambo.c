@@ -3,25 +3,26 @@
 
 //
 // motor properties
-float min_rpm = 0.0f;
+float min_rpm = 2000.0f;
 float max_rpm = 9000.0f;
 float bottom_rpm = 2500.0f;
 float top_rpm = 8000.0f;
-float max_torque = 600.6f;
-float min_torque = 150.0f;
+float max_torque = 400.6f;
+float min_torque = 250.0f;
 float curr_motor_rpm;
 float curr_motor_torque;
 float throttle_fac;
+bool motor_blew;
 
 //
 // transmission properties
 float gear_ratios [] = {
 	0.0f,
-	2.232f,
-	1.625f,
-	1.088f,
-	0.858f,
-	0.707f
+	3.5f,
+	2.00f,
+	1.5f,
+	1.0f,
+	0.75f
 };
 int gear_count = 6;
 float diff_ratio = 3.0f;
@@ -86,9 +87,10 @@ float update_motor (float speed_mps) {
 		curr_motor_rpm = bottom_rpm;
 	}
 	// make the motor blow up over max RPM (or change gears)
-	if (curr_motor_rpm > top_rpm) {
+	if (curr_motor_rpm > max_rpm) {
 		//printf ("BOOM! motor exploded\n");
-		curr_motor_rpm = top_rpm;
+		motor_blew = true;
+		//curr_motor_rpm = top_rpm;
 	}
 	// set current torque as a factor of torque available at current rpm
 	// throttle is the accelerator pedal between 0.0 and 1.0

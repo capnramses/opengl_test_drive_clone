@@ -6,9 +6,10 @@
 * lay-bys
 
 =Cosmetic=
+* curr gear indicator
+* analogue speedometer with needle
 * other car models
 * sign posts and marker posts
 * motion-blur the headlights of other cars
 (every x seconds build a 3-frame buffer of headlights and discard rest)
-* tachometer etc.
 * hanging thing on mirror
