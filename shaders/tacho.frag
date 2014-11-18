@@ -1,4 +1,6 @@
 #version 420
+// you need 420 or newer to do the (binding=x) thing
+// otherwise you have to do from C: glUniform1i (emtpy_dm_location, 1);
 
 in vec2 st;
 layout (binding = 0) uniform sampler2D full_dm;
