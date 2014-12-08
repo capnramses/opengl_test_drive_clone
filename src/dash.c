@@ -30,6 +30,8 @@
 #define TACHO_FS "shaders/tacho.frag"
 #define NEEDLE_VS "shaders/needle.vert"
 #define NEEDLE_FS "shaders/needle.frag"
+#define GEAR_VS "shaders/gear.vert"
+#define GEAR_FS "shaders/gear.frag"
 #define STEERING_DIFF "textures/steering.png"
 #define SMASHED_DIFF "textures/smashed.png"
 #define TACHO_FULL_DIFF "textures/tacho_full.png"
@@ -41,21 +43,22 @@ int dash_point_count, mirror_point_count, steering_point_count,
 	speedo_point_count, needle_point_count;
 
 GLuint dash_sp, mirror_sp, mirror_outer_sp, steering_sp, smashed_sp, tacho_sp,
-	speedo_sp, needle_sp;
+	speedo_sp, needle_sp, gear_sp;
 GLint dash_M_loc, dash_V_loc, dash_P_loc, dash_w_loc, dash_h_loc;
 GLint mirror_M_loc, mirror_V_loc,  mirror_P_loc;
 GLint mirror_outer_M_loc, mirror_outer_V_loc,  mirror_outer_P_loc;
 GLint steering_M_loc, steering_V_loc, steering_P_loc, steering_w_loc,
 	steering_h_loc;
 GLint tacho_M_loc, tacho_V_loc, tacho_P_loc, tacho_rpm_fac_loc;
+GLint gear_M_loc, gear_V_loc, gear_P_loc;
 GLint speedo_M_loc, speedo_V_loc, speedo_P_loc;
 GLint needle_M_loc, needle_V_loc, needle_P_loc;
-GLuint steering_diff_map, smashed_diff_map, tacho_full_diff_map,
+GLuint steering_diff_map, smashed_diff_map, tacho_full_diff_map, gear_dms[6],
 	tacho_empty_diff_map, speedo_diff_map;
 float steering_deg;
 
 mat4 dash_M, tacho_M, mirror_M, mirror_outer_M, steering_M, dash_V, P_boring,
-	speedo_M, needle_M;
+	speedo_M, needle_M, gear_M;
 vec3 dash_pos;
 
 bool draw_smashed;
@@ -75,6 +78,7 @@ bool init_dash () {
 	mirror_M = identity_mat4 ();
 	mirror_outer_M = identity_mat4 ();
 	steering_M = identity_mat4 ();
+	gear_M = identity_mat4 ();
 
 	// custom look-at for dashboard
 	dash_V = look_at (vec3 (0.0f, 0.0f, 0.0f), vec3 (0.0f, 0.0f, -1.0f),
@@ -326,6 +330,14 @@ bool init_dash () {
 	glUniformMatrix4fv (tacho_V_loc, 1, GL_FALSE, dash_V.m);
 	uniforms++;
 	
+	gear_sp = link_programme_from_files (GEAR_VS, GEAR_FS);
+	gear_P_loc = glGetUniformLocation (gear_sp, "P");
+	gear_V_loc = glGetUniformLocation (gear_sp, "V");
+	gear_M_loc = glGetUniformLocation (gear_sp, "M");
+	glUseProgram (gear_sp);
+	glUniformMatrix4fv (gear_V_loc, 1, GL_FALSE, dash_V.m);
+	uniforms++;
+	
 	speedo_sp = link_programme_from_files (SPEEDO_VS, SPEEDO_FS);
 	speedo_P_loc = glGetUniformLocation (speedo_sp, "P");
 	speedo_V_loc = glGetUniformLocation (speedo_sp, "V");
@@ -348,10 +360,28 @@ bool init_dash () {
 	tacho_full_diff_map = create_texture_from_file (TACHO_FULL_DIFF);
 	tacho_empty_diff_map = create_texture_from_file (TACHO_EMPTY_DIFF);
 	speedo_diff_map = create_texture_from_file (SPEEDO_DIFF);
+	{
+		int i;
+		
+		char gear_ims[6][32] = {
+			"textures/n.png",
+			"textures/1st.png",
+			"textures/2nd.png",
+			"textures/3rd.png",
+			"textures/4th.png",
+			"textures/5th.png"
+		};
+		
+		for (i = 0; i < 6; i++) {
+			gear_dms[i] = create_texture_from_file (gear_ims[i]);
+		}
+	}
 	
 	dash_M = translate (identity_mat4 (), vec3 (0.0f, 0.0f, -1.125f));
 	tacho_M = scale (identity_mat4 (), vec3 (0.15f, 0.1f, 1.0f));
 	tacho_M = translate (tacho_M, vec3 (-0.6f, -0.4f, -1.125f));
+	gear_M = scale (identity_mat4 (), vec3 (0.05f, 0.05f, 1.0f));
+	gear_M = translate (gear_M, vec3 (0.6f, -0.5f, -1.125f));
 	mirror_M = scale (identity_mat4 (), vec3 (0.4f, 0.4f, 0.4f));
 	mirror_M = translate (mirror_M, vec3 (0.65f, 0.6f, -1.125f));
 	speedo_M = scale (identity_mat4 (), vec3 (0.1125f, 0.11f, 0.15f));
@@ -465,6 +495,21 @@ void draw_dash () {
 	glActiveTexture (GL_TEXTURE1);
 	glBindTexture (GL_TEXTURE_2D, tacho_empty_diff_map);
 	glUniformMatrix4fv (tacho_M_loc, 1, GL_FALSE, tacho_M.m);
+	uniforms++;
+	glDrawArrays (GL_TRIANGLE_STRIP, 0, 4);
+	draws++;
+	verts += 4;
+	
+	//
+	// gear indicator
+	glUseProgram (gear_sp);
+	if (cam_P_dirty) {
+		glUniformMatrix4fv (gear_P_loc, 1, GL_FALSE, P_boring.m);
+		uniforms++;
+	}
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, gear_dms[get_curr_gear ()]);
+	glUniformMatrix4fv (gear_M_loc, 1, GL_FALSE, gear_M.m);
 	uniforms++;
 	glDrawArrays (GL_TRIANGLE_STRIP, 0, 4);
 	draws++;

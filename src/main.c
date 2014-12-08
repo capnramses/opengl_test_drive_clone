@@ -14,10 +14,16 @@
 #include <stdlib.h>
 
 #define TIME_STEP_SIZE 0.02 // 50 Hz
+#define FINISH_VS "shaders/finish.vert"
+#define FINISH_FS "shaders/finish.frag"
+#define FINISH_IMG "textures/finish.png"
 
 bool dump_video;
 int time_text;
 int fps_text;
+int final_text;
+GLuint finish_sp;
+GLuint finish_dm;
 
 int main (int argc, char** argv) {
 	double prev_time = 0.0;
@@ -102,7 +108,9 @@ int main (int argc, char** argv) {
 		0.8f
 	);
 #endif
-	init_player ();
+
+	finish_sp = link_programme_from_files (FINISH_VS, FINISH_FS);
+	finish_dm = create_texture_from_file (FINISH_IMG);
 
 	glEnable (GL_DEPTH_TEST);
 	glDepthFunc (GL_LESS);
@@ -117,6 +125,7 @@ int main (int argc, char** argv) {
 	double time_since_text_up = 0.0;
 	double fps_timer = 0.0;
 	prev_time = glfwGetTime ();
+	double finish_time = 0.0;
 	while (!glfwWindowShouldClose (gl_window)) {
 		// work out how much time has passed
 		double curr_time = glfwGetTime ();
@@ -148,22 +157,10 @@ int main (int argc, char** argv) {
 		}
 		
 		if (finished_level ()) {
-				char tmp[32];
-				int mins, secs, ms;
-				double dms;
-				
-				mins = (int)(curr_time / 60.0);
-				secs = (int)(curr_time - (double)mins * 60.0);
-				dms = curr_time - (double)mins * 60.0 - (double)secs;
-				ms = (int)(dms * 100.0);
-				
-				sprintf (tmp, "%02i:%02i:%02i", mins, secs, ms); 
-				printf ("Finished Level! Time: %s\n", tmp);
-				printf ("Top speed reached: %i kph\n", (int)top_speed_reached);
-				printf ("Crash count: %i\n", crash_count);
-				
-				break;
-			}
+			finish_time = curr_time;
+			stop_driving_snds ();
+			break;
+		}
 		
 		// don't update too often that it slows us down
 		time_since_text_up += elapsed;
@@ -243,6 +240,60 @@ int main (int argc, char** argv) {
 		
 		glfwPollEvents ();
 		glfwSwapBuffers (gl_window);
+	}
+	
+	// final screen!
+	if (finished_level ()) {
+		char tmp[32], sfinal[256];
+		int mins, secs, ms;
+		double dms;
+		
+		mins = (int)(finish_time / 60.0);
+		secs = (int)(finish_time - (double)mins * 60.0);
+		dms = finish_time - (double)mins * 60.0 - (double)secs;
+		ms = (int)(dms * 100.0);
+		
+		sprintf (tmp, "%02i:%02i:%02i", mins, secs, ms); 
+		sprintf (sfinal, "Finished Level! Time: %s\n", tmp);
+		sprintf (tmp, "Top speed reached: %i kph\n", (int)top_speed_reached);
+		strcat (sfinal, tmp);
+		sprintf (tmp, "Crash count: %i\n", crash_count);
+		strcat (sfinal, tmp);
+		final_text = add_text (
+			sfinal,
+			-0.5,
+			0.5,
+			120.0f,
+			0.9f,
+			0.9f,
+			0.0f,
+			1.0f
+		);
+	
+		while (!glfwWindowShouldClose (gl_window)) {
+			glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+			//
+			// draw lambo bkrnd
+			glUseProgram (finish_sp);
+			glActiveTexture (GL_TEXTURE0);
+			glBindTexture (GL_TEXTURE_2D, finish_dm);
+			glDrawArrays (GL_TRIANGLE_STRIP, 0, 4);
+		
+			//
+			// draw best time text
+			draw_text (final_text);
+		
+			glfwSwapBuffers (gl_window);
+		
+			if (GLFW_PRESS == glfwGetKey (gl_window, GLFW_KEY_F11)) {
+				assert (screenshot ());
+			}
+			if (GLFW_PRESS == glfwGetKey (gl_window, GLFW_KEY_ESCAPE)) {
+				glfwSetWindowShouldClose (gl_window, 1);
+			}
+			glfwPollEvents ();
+		}
 	}
 	
 	if (dump_video) {

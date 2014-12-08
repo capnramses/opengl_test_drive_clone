@@ -62,4 +62,8 @@ bool change_text_colour (int id, float r, float g, float b, float a);
 // draw all the texts to screen
 void draw_texts ();
 
+//
+// draw just one text to screen
+void draw_text (int i);
+
 #endif

@@ -401,6 +401,29 @@ bool change_text_colour (int id, float r, float g, float b, float a) {
 	return true;
 }
 
+void draw_text (int i) {
+	// always draw on-top of scene
+	glDisable (GL_DEPTH_TEST);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable (GL_BLEND);
+	
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, font_texture);
+	glUseProgram (font_sp);
+	glBindVertexArray (renderable_texts[i].vao);
+	glUniform4f (font_sp_text_colour_loc,
+		renderable_texts[i].r,
+		renderable_texts[i].g,
+		renderable_texts[i].b,
+		renderable_texts[i].a);
+	uniforms++;
+	glDrawArrays (GL_TRIANGLES, 0, renderable_texts[i].point_count);
+	draws++;
+	verts += renderable_texts[i].point_count;
+	
+	glEnable (GL_DEPTH_TEST);
+}
+
 void draw_texts () {
 	int i;
 	

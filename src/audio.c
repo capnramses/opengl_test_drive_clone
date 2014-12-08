@@ -20,7 +20,7 @@ bool init_audio () {
 	}
 	engine_snd->setPlaybackSpeed (0.0f);
 	engine_snd->setVolume (0.25f);
-	audio->play2D("audio/pink.ogg", true, false, false);
+	//audio->play2D("audio/pink.ogg", true, false, false);
 
 	return true;
 }
@@ -41,6 +41,15 @@ bool play_crash_snd () {
 void set_engine_speed (float fac) {
 	assert (engine_snd);
 	engine_snd->setPlaybackSpeed (fabs(fac) / 5.0f);
+}
+
+void stop_driving_snds () {
+	if (audio->isCurrentlyPlaying ("audio/crash.ogg")) {
+		crash_snd->stop ();
+	}
+	if (audio->isCurrentlyPlaying ("audio/engine_large.ogg")) {
+		engine_snd->stop ();
+	}
 }
 
 bool free_audio () {

@@ -9,7 +9,7 @@
 #include "text.h"
 
 // comment this line out for testing w/o crash detection
-//#define CRASHES
+#define CRASHES
 
 float top_speed_reached = 0.0f;
 float curr_heading = 0.0f;
@@ -25,7 +25,6 @@ bool det_joystick;
 float friction = 0.01f;
 float brake_power = 30.0f;
 
-int kph_text = -1;
 int crash_count;
 
 vec3 get_player_pos () {
@@ -40,22 +39,6 @@ bool finished_level () {
 		return true;
 	}
 	return false;
-}
-
-//
-// make some text
-bool init_player () {
-	kph_text = add_text (
-		"",
-		-50.0f / (float)gl_width,
-		-1.0f + 600.0f / (float)gl_height,
-		110.0f,
-		0.9f,
-		0.9f,
-		0.0f,
-		0.8f
-	);
-	return true;
 }
 
 void update_player (double elapsed) {
@@ -197,12 +180,7 @@ void update_player (double elapsed) {
 		top_speed_reached = kph;
 	}
 	
-	{
-		char tmp[128];
-		sprintf (tmp, "        gear: %i ", curr_gear);
-		update_text (kph_text, tmp);
-		set_rpm_fac ((curr_motor_rpm) / (max_rpm));
-	}
+	set_rpm_fac ((curr_motor_rpm) / (max_rpm));
 	
 	//printf ("kph %f accel %f\n", kph, accel);
 	// calculate friction so that car slows down if you're not accel or braking
@@ -272,4 +250,8 @@ void update_player (double elapsed) {
 
 float get_curr_speed () {
 	return curr_speed;
+}
+
+int get_curr_gear () {
+	return curr_gear;
 }

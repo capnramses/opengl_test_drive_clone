@@ -212,7 +212,7 @@ GLuint create_texture_from_file (const char* file_name) {
 	int x,y,n;
 	unsigned char* data;
 	
-	data = stbi_load (file_name, &x, &y, &n, 0);
+	data = stbi_load (file_name, &x, &y, &n, 4);
 	if (!data) {
 		fprintf (stderr, "ERROR: could not load texture from %s\n", file_name);
 		exit (1);

@@ -1,5 +1,7 @@
-8 Dec 2014
+8 Dec 2014 -- version 1.0 -- finished game!
 * analogue speedo with needle that works
+* gear indicator on dashboard
+* finishing screen with final time etc.
 
 18 nov 2014
 * upgraded gamepad controls for new motor sim
