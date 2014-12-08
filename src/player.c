@@ -9,7 +9,7 @@
 #include "text.h"
 
 // comment this line out for testing w/o crash detection
-#define CRASHES
+//#define CRASHES
 
 float top_speed_reached = 0.0f;
 float curr_heading = 0.0f;
@@ -46,7 +46,7 @@ bool finished_level () {
 // make some text
 bool init_player () {
 	kph_text = add_text (
-		"0 RPM      0 KPH",
+		"",
 		-50.0f / (float)gl_width,
 		-1.0f + 600.0f / (float)gl_height,
 		110.0f,
@@ -199,7 +199,7 @@ void update_player (double elapsed) {
 	
 	{
 		char tmp[128];
-		sprintf (tmp, "%i KPH   gear: %i ", (int)kph, curr_gear);
+		sprintf (tmp, "        gear: %i ", curr_gear);
 		update_text (kph_text, tmp);
 		set_rpm_fac ((curr_motor_rpm) / (max_rpm));
 	}
@@ -229,8 +229,10 @@ void update_player (double elapsed) {
 	set_engine_speed (curr_motor_rpm * 0.002f + 0.002f);
 	// also change camera perspective as speed changes
 	float fovrange = 150.0f - 67.0f;
-	//float kph = curr_speed * (1.0f / 0.27f);
-	float fovfac = kph / 300.0f; // just over 300kph
+	float fovfac = kph / 250.0f; // just over 300kph
+	if (fovfac > 1.0f) {
+		fovfac = 1.0f;
+	}
 	float fovnew = 67.0f + fovrange * fovfac;
 	set_fovy (fovnew);
 	

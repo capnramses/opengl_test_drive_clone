@@ -28,6 +28,8 @@
 #define SPEEDO_FS "shaders/speedo.frag"
 #define TACHO_VS "shaders/tacho.vert"
 #define TACHO_FS "shaders/tacho.frag"
+#define NEEDLE_VS "shaders/needle.vert"
+#define NEEDLE_FS "shaders/needle.frag"
 #define STEERING_DIFF "textures/steering.png"
 #define SMASHED_DIFF "textures/smashed.png"
 #define TACHO_FULL_DIFF "textures/tacho_full.png"
@@ -39,7 +41,7 @@ int dash_point_count, mirror_point_count, steering_point_count,
 	speedo_point_count, needle_point_count;
 
 GLuint dash_sp, mirror_sp, mirror_outer_sp, steering_sp, smashed_sp, tacho_sp,
-	speedo_sp;
+	speedo_sp, needle_sp;
 GLint dash_M_loc, dash_V_loc, dash_P_loc, dash_w_loc, dash_h_loc;
 GLint mirror_M_loc, mirror_V_loc,  mirror_P_loc;
 GLint mirror_outer_M_loc, mirror_outer_V_loc,  mirror_outer_P_loc;
@@ -47,6 +49,7 @@ GLint steering_M_loc, steering_V_loc, steering_P_loc, steering_w_loc,
 	steering_h_loc;
 GLint tacho_M_loc, tacho_V_loc, tacho_P_loc, tacho_rpm_fac_loc;
 GLint speedo_M_loc, speedo_V_loc, speedo_P_loc;
+GLint needle_M_loc, needle_V_loc, needle_P_loc;
 GLuint steering_diff_map, smashed_diff_map, tacho_full_diff_map,
 	tacho_empty_diff_map, speedo_diff_map;
 float steering_deg;
@@ -209,6 +212,7 @@ bool init_dash () {
 		fprintf (stderr, "ERROR loading speedo mesh\n");
 		return false;
 	}
+	printf ("loaded speedo with %i pts\n", speedo_point_count);
 	
 	glGenBuffers (1, &vp_vbo);
 	glGenBuffers (1, &vt_vbo);
@@ -235,7 +239,6 @@ bool init_dash () {
 	glEnableVertexAttribArray (1);
 	glBindBuffer (GL_ARRAY_BUFFER, vt_vbo);
 	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-	glEnableVertexAttribArray (2);
 	
 	if (!load_obj_file (
 		NEEDLE_MESH,
@@ -273,7 +276,6 @@ bool init_dash () {
 	glEnableVertexAttribArray (1);
 	glBindBuffer (GL_ARRAY_BUFFER, vt_vbo);
 	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-	glEnableVertexAttribArray (2);
 	
 	// shader
 	dash_sp = link_programme_from_files (DASH_VS, DASH_FS);
@@ -332,6 +334,14 @@ bool init_dash () {
 	glUniformMatrix4fv (speedo_V_loc, 1, GL_FALSE, dash_V.m);
 	uniforms++;
 	
+	needle_sp = link_programme_from_files (NEEDLE_VS, NEEDLE_FS);
+	needle_P_loc = glGetUniformLocation (needle_sp, "P");
+	needle_V_loc = glGetUniformLocation (needle_sp, "V");
+	needle_M_loc = glGetUniformLocation (needle_sp, "M");
+	glUseProgram (needle_sp);
+	glUniformMatrix4fv (needle_V_loc, 1, GL_FALSE, dash_V.m);
+	uniforms++;
+	
 	// textures
 	steering_diff_map = create_texture_from_file (STEERING_DIFF);
 	smashed_diff_map = create_texture_from_file (SMASHED_DIFF);
@@ -344,7 +354,7 @@ bool init_dash () {
 	tacho_M = translate (tacho_M, vec3 (-0.6f, -0.4f, -1.125f));
 	mirror_M = scale (identity_mat4 (), vec3 (0.4f, 0.4f, 0.4f));
 	mirror_M = translate (mirror_M, vec3 (0.65f, 0.6f, -1.125f));
-	speedo_M = scale (identity_mat4 (), vec3 (0.1125f, 0.1f, 0.15f));
+	speedo_M = scale (identity_mat4 (), vec3 (0.1125f, 0.11f, 0.15f));
 	speedo_M = translate (speedo_M, vec3 (0.0f, -0.535f, -1.3f));
 	needle_M = scale (identity_mat4 (), vec3 (0.1125f, 0.1f, 0.15f));
 	needle_M = translate (needle_M, vec3 (0.0f, -0.535f, -1.3f));
@@ -425,13 +435,17 @@ void draw_dash () {
 	{
 		float needle_deg;
 		
-		glUseProgram (dash_sp);
+		glUseProgram (needle_sp);
+		if (cam_P_dirty) {
+			glUniformMatrix4fv (needle_P_loc, 1, GL_FALSE, P_boring.m);
+			uniforms++;
+		}
 		needle_deg = 90.0f - (
-			(get_curr_speed ()* (1.0f / 0.27f)) / 200.0f) * 180.0f;
+			(get_curr_speed ()* (1.0f / 0.27f)) / 300.0f) * 180.0f;
 		needle_M = rotate_z_deg (identity_mat4 (), needle_deg);
 		needle_M = scale (needle_M , vec3 (0.1125f, 0.1f, 0.15f));
 		needle_M = translate (needle_M, vec3 (0.0f, -0.535f, -1.3f));
-		glUniformMatrix4fv (dash_M_loc, 1, GL_FALSE, needle_M.m);
+		glUniformMatrix4fv (needle_M_loc, 1, GL_FALSE, needle_M.m);
 		uniforms++;
 		glBindVertexArray (needle_vao);
 		glDrawArrays (GL_TRIANGLES, 0, needle_point_count);
