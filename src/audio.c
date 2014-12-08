@@ -20,7 +20,7 @@ bool init_audio () {
 	}
 	engine_snd->setPlaybackSpeed (0.0f);
 	engine_snd->setVolume (0.25f);
-	//audio->play2D("audio/noufos.ogg", true, false, false);
+	audio->play2D("audio/pink.ogg", true, false, false);
 
 	return true;
 }

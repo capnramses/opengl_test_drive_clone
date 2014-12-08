@@ -268,3 +268,6 @@ void update_player (double elapsed) {
 #endif
 }
 
+float get_curr_speed () {
+	return curr_speed;
+}
