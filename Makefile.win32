@@ -1,0 +1,50 @@
+BIN = drive32.exe
+CC = g++
+FLAGS = -g -Ofast -Wall -Wfatal-errors -pedantic -Wextra -fmessage-length=0 -m32
+DEPS = -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"
+INCLUDES = $(wildcard include/*.h)
+INC_DIR = -I include/ -I lib/include/
+LIB_DIR = lib/win32_gcc/
+LOC_LIB = $(LIB_DIR)libglew32.dll.a $(LIB_DIR)glfw3dll.a \
+	-L$(LIB_DIR) -lIrrKlang
+SYS_LIB = -lOpenGL32
+OBJS = \
+	obj/main.o\
+	obj/gl_utils.o\
+	obj/terrain.o\
+	obj/camera.o\
+	obj/obj_parser.o \
+	obj/dash.o \
+	obj/player.o \
+	obj/stb_image_write.o \
+	obj/traffic.o \
+	obj/audio.o \
+	obj/text.o \
+	obj/lambo.o
+
+.PHONY : all
+all : binary
+
+binary : $(OBJS) $(INCLUDES)
+	@echo '.....................................................................'
+	$(CC) $(FLAGS) -o $(BIN) $(OBJS) $(LOC_LIB) $(SYS_LIB)
+	@echo '_____________________________________________________________________'
+	@echo '_____________________________________________________________________'
+
+.PHONY : clean
+clean :
+	rm $(BIN) obj/*
+
+#--------------------rule for making objects from cpp files--------------------#
+obj/%.o : src/%.cpp $(INCLUDES)
+	@echo ''
+	@echo '~~~~~~~~~~~~~~~~ building file $< ~~~~~~~~~~~~~~~~~~~~'
+	@echo ''
+	$(CC) $(FLAGS) -c $(DEPS) -o"$@" "$<" $(INC_DIR)
+
+obj/%.o: src/%.c $(INCLUDES)
+	@echo ''
+	@echo '~~~~~~~~~~~~~~~~ building file $< ~~~~~~~~~~~~~~~~~~~~'
+	@echo ''
+	$(CC) $(FLAGS) -c $(DEPS) -o"$@" "$<" $(INC_DIR)
+
