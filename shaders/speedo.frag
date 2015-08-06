@@ -1,4 +1,4 @@
-#version 420
+#version 410
 // you need 420 or newer to do the (binding=x) thing
 // otherwise you have to do from C: glUniform1i (emtpy_dm_location, 1);
 

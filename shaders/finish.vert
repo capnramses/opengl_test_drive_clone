@@ -1,4 +1,4 @@
-#version 420
+#version 410
 
 /* this is an attribute-less shader woooo!
 position and texture coords are derived from vertex number,

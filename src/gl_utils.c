@@ -54,11 +54,17 @@ bool start_gl (int width, int height) {
 	}
 
 	/* change to 3.2 if on Apple OS X */
+#ifdef APPLE
+	glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#else
 	glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
+#endif
 	glfwWindowHint (GLFW_SAMPLES, msaa_samples);
 
 	if (full_screen) {

@@ -30,3 +30,6 @@ obj/
 Icon?
 ehthumbs.db
 Thumbs.db
+drive64
+*.frag-e
+*.vert-e

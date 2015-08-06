@@ -326,8 +326,12 @@ bool init_dash () {
 	tacho_V_loc = glGetUniformLocation (tacho_sp, "V");
 	tacho_M_loc = glGetUniformLocation (tacho_sp, "M");
 	tacho_rpm_fac_loc = glGetUniformLocation (tacho_sp, "rpm_fac");
+	GLint tacho_full_dm_loc = glGetUniformLocation (tacho_sp, "full_dm");
+	GLint tacho_empty_dm_loc = glGetUniformLocation (tacho_sp, "empty_dm");
 	glUseProgram (tacho_sp);
 	glUniformMatrix4fv (tacho_V_loc, 1, GL_FALSE, dash_V.m);
+	glUniform1i (tacho_full_dm_loc, 0);
+	glUniform1i (tacho_empty_dm_loc, 1);
 	uniforms++;
 	
 	gear_sp = link_programme_from_files (GEAR_VS, GEAR_FS);
